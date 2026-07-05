@@ -1,3 +1,5 @@
+@file:Suppress("UnstableApiUsage")
+
 rootProject.name = "RAC"
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
@@ -32,7 +34,4 @@ plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
 }
 
-include(":androidApp")
-include(":desktopApp")
-include(":shared")
-include(":webApp")
+include(":core")
