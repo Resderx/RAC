@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidMultiplatformLibrary)
     alias(libs.plugins.vanniktech.mavenPublish)
+    kotlin("plugin.serialization") version "2.4.0"
 }
 
 group = "com.resderx.rac"
@@ -24,6 +25,10 @@ kotlin {
     jvm()
     
     js {
+        useEsModules()
+        useCommonJs()
+        generateTypeScriptDefinitions()
+
         binaries.executable()
         browser()
         nodejs()
@@ -49,13 +54,49 @@ kotlin {
        compilerOptions {
            jvmTarget = JvmTarget.JVM_11
        }
+
+        withHostTest {
+            isIncludeAndroidResources = true
+        }
     }
     
     sourceSets {
-        commonMain.dependencies {
+        appleMain.dependencies {
+            implementation(libs.ktor.client.darwin)
         }
+
+        androidMain.dependencies {
+            implementation(libs.ktor.client.okhttp)
+        }
+
+        commonMain.dependencies {
+            implementation(libs.ktor.client.core)
+            implementation(libs.ktor.client.cio)
+            implementation(libs.ktor.client.websockets)
+            implementation(libs.kotlinx.coroutines.core)
+            implementation(libs.kotlinx.coroutines.test)
+            implementation(libs.kotlinx.serialization.json)
+        }
+
         commonTest.dependencies {
             implementation(libs.kotlin.test)
+        }
+
+        jvmMain.dependencies {
+            implementation(libs.ktor.client.okhttp)
+        }
+
+        linuxMain.dependencies {
+            implementation(libs.ktor.client.curl)
+        }
+
+        mingwMain.dependencies {
+            implementation(libs.ktor.client.winhttp)
+            implementation(libs.ktor.client.curl)
+        }
+
+        webMain.dependencies {
+            implementation(libs.ktor.client.js)
         }
     }
 }
