@@ -1,13 +1,17 @@
-package com.resderx.rac.network.call.completions.basic
+package com.resderx.rac.network.call.completions.basic.reponse
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-sealed interface CompletionsApiResponseChoicesLogprobsBasic {
-    val content: List<CompletionsApiResponseChoicesLogprobsContentBasic>?
-    val refusal: List<CompletionsApiResponseChoicesLogprobsContentBasic>?
-}
+sealed interface CompletionsApiResponseChoicesDeltaBasic {
+    val role: String?
+    val content: String?
 
+    @SerialName("tool_calls")
+    val toolCalls: List<CompletionsApiResponseChoicesDeltaToolCallsBasic>?
+    val refusal: String?
+}
 /*
 logprobs
 

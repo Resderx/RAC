@@ -1,4 +1,4 @@
-package com.resderx.rac.network.call.completions.basic
+package com.resderx.rac.network.call.completions.basic.reponse
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
