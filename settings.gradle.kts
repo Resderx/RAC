@@ -35,3 +35,6 @@ plugins {
 }
 
 include(":core")
+include(":mcp")
+include(":acp")
+include(":a2a")

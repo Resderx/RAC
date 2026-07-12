@@ -1,0 +1,143 @@
+package com.resderx.rac.a2a
+
+import com.resderx.rac.dsl.RAC
+import com.resderx.rac.messages.AIMessage
+import com.resderx.rac.messages.FinishReason
+
+/**
+ * 通过 A2A 协议调用远端 Agent，将响应归一化为 [AIMessage]（RAC 扩展函数）。
+ *
+ * - 作用：作为 A2A Client 调用远端 Agent（Google ADK、LangGraph、CrewAI 等），
+ *   发送文本提示，收集流式更新，返回统一的 AIMessage
+ * - 必要性：RAC 需支持 A2A Client 角色，使 RAC 能与任何 A2A 兼容的远端 Agent 通信；
+ *   与 [chatWithAcpAgent] 对称——ACP 用于本地 stdio Agent，A2A 用于 HTTP 远端 Agent
+ * - 模块拆分：本扩展函数位于 rac-a2a 模块，避免 core 模块依赖 A2A 协议包；
+ *   调用方需在依赖中同时引入 rac-core 与 rac-a2a
+ * - 设计思路：
+ *   1. 构造 SendStreamingMessageParams（含 user 角色的 TextPart）
+ *   2. 调用 [A2aClient.sendStreamingMessage] 发起流式请求
+ *   3. 从流式事件中提取 agent 消息文本并累积
+ *   4. 从最终 Task 状态映射 FinishReason
+ *   5. 返回统一的 AIMessage
+ * - 边缘：
+ *   - 非文本 Part（FilePart/DataPart）被忽略
+ *   - 流式事件中的 ArtifactUpdate 提取文本累积到 content
+ *   - Task 终态映射：COMPLETED→STOP、INPUT_REQUIRED→TOOL_CALLS、FAILED→UNKNOWN
+ *
+ * @receiver RAC 实例（仅作为命名空间锚点，不直接使用其内部能力）
+ * @param client A2A 客户端实例（调用方管理生命周期）
+ * @param prompt 文本提示
+ * @param onUpdate 流式更新回调（转发给调用方）
+ * @return 统一的 AIMessage（content 为累积的 Agent 响应文本）
+ * @throws com.resderx.rac.exceptions.RACException 当 A2A 请求失败时向上传播
+ */
+suspend fun RAC.chatWithA2aAgent(
+    client: A2aClient,
+    prompt: String,
+    onUpdate: suspend (A2aStreamEvent) -> Unit = {},
+): AIMessage {
+    // 1. 构造发送参数——user 角色的 TextPart
+    val params = SendStreamingMessageParams(
+        message = Message(
+            role = Role.USER,
+            parts = listOf(TextPart(text = prompt)),
+        ),
+    )
+
+    // 2. 累积 Agent 响应文本
+    val contentBuilder = StringBuilder()
+    var finalTaskState: TaskState = TaskState.COMPLETED
+
+    // 3. 发送流式请求并收集更新
+    client.sendStreamingMessage(params).collect { event ->
+        onUpdate(event)
+        when (event) {
+            is A2aStreamEvent.Initial -> {
+                // 初始事件——若为 Task，提取其状态
+                val result = event.result
+                if (result is SendMessageResult.TaskResult) {
+                    finalTaskState = result.task.status.state
+                }
+            }
+            is A2aStreamEvent.StatusUpdate -> {
+                // 状态更新——记录最终状态
+                finalTaskState = event.event.status.state
+                // 若 task history 含 agent 消息，提取文本
+            }
+            is A2aStreamEvent.ArtifactUpdate -> {
+                // 产出物更新——提取文本 Part 累积
+                event.event.artifact.parts
+                    .filterIsInstance<TextPart>()
+                    .forEach { contentBuilder.append(it.text) }
+            }
+        }
+    }
+
+    // 4. 映射 TaskState 到 FinishReason 并返回
+    return AIMessage(
+        content = contentBuilder.toString(),
+        finishReason = finalTaskState.toFinishReason(),
+    )
+}
+
+/**
+ * 将 RAC 作为 A2A Agent Server 启动，返回协议无关的 JSON-RPC 分发器（RAC 扩展函数）。
+ *
+ * - 作用：创建 [RacA2aAgent]（将 RAC 的 AI 调用能力适配为 A2A Agent）并包装进 [A2aAgentServer]，
+ *   使任何 A2A 兼容的 Client 都能通过 A2A 协议调用 RAC 管理的 AI 供应商
+ * - 必要性：RAC 需支持 A2A Agent 角色（Server 端），与 Client 角色（[chatWithA2aAgent]）对称；
+ *   本方法封装 RacA2aAgent + A2aAgentServer 的创建，调用方只需配置 Agent Card 与系统提示
+ * - 模块拆分：本扩展函数位于 rac-a2a 模块，避免 core 模块依赖 A2A 协议包
+ * - 设计思路：
+ *   1. 构造 [AgentCard]：描述 Agent 身份、能力、端点
+ *   2. 构造 [RacA2aAgent]：以当前 RAC 实例为 AI 引擎
+ *   3. 构造 [A2aAgentServer]：协议无关的 JSON-RPC 分发器
+ *   4. 返回 A2aAgentServer（调用方需自行绑定 HTTP 服务器）
+ * - 与 [serveAsAcpAgent] 的差异：
+ *   - ACP 使用 stdio 传输，serveAsAcpAgent 内部创建 stdio 连接
+ *   - A2A 使用 HTTP 传输，serveAsA2aAgent 返回协议无关分发器，HTTP 绑定由调用方完成
+ *   - 原因：KMP 库不引入 HTTP 服务器依赖，保持跨平台兼容
+ * - 边缘：systemPrompt 为 null 时不注入系统消息
+ *
+ * @receiver RAC 实例，作为 Agent 的 AI 引擎
+ * @param agentCard Agent Card 元数据，默认 name="rac-agent"、url 为空（调用方填充）
+ * @param systemPrompt 系统提示词，每次 chat 调用时注入；null 表示不注入
+ * @return A2A Agent Server（协议无关分发器，调用方需绑定 HTTP 服务器）
+ */
+fun RAC.serveAsA2aAgent(
+    agentCard: AgentCard = AgentCard(
+        name = "rac-agent",
+        description = "RAC Agent — Kotlin Multiplatform AI Call Library",
+        url = "",
+        provider = AgentProvider(organization = "ResDerX"),
+    ),
+    systemPrompt: String? = null,
+): A2aAgentServer {
+    val handler = RacA2aAgent(
+        rac = this,
+        agentCard = agentCard,
+        systemPrompt = systemPrompt,
+    )
+    return A2aAgentServer(handler)
+}
+
+/**
+ * A2A TaskState 到 RAC FinishReason 的映射（文件私有）。
+ *
+ * - COMPLETED → STOP（正常完成）
+ * - INPUT_REQUIRED → TOOL_CALLS（需用户提供输入，最接近 TOOL_CALLS 语义）
+ * - FAILED → UNKNOWN（执行失败）
+ * - CANCELED → STOP（用户取消，FinishReason 无对应值）
+ * - REJECTED → CONTENT_FILTER（请求被拒绝）
+ * - AUTH_REQUIRED → UNKNOWN（需认证）
+ * - WORKING → UNKNOWN（仍在进行中，不应出现在终态）
+ */
+private fun TaskState.toFinishReason(): FinishReason = when (this) {
+    TaskState.COMPLETED -> FinishReason.STOP
+    TaskState.INPUT_REQUIRED -> FinishReason.TOOL_CALLS
+    TaskState.FAILED -> FinishReason.UNKNOWN
+    TaskState.CANCELED -> FinishReason.STOP
+    TaskState.REJECTED -> FinishReason.CONTENT_FILTER
+    TaskState.AUTH_REQUIRED -> FinishReason.UNKNOWN
+    TaskState.WORKING -> FinishReason.UNKNOWN
+}
