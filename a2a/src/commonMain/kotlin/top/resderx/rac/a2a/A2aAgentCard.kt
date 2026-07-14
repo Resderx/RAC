@@ -64,7 +64,7 @@ data class AgentCard(
     val url: String,
     val version: String = "1.0.0",
     val provider: top.resderx.rac.a2a.AgentProvider? = null,
-    val capabilities: top.resderx.rac.a2a.AgentCapabilities = _root_ide_package_.top.resderx.rac.a2a.AgentCapabilities(),
+    val capabilities: top.resderx.rac.a2a.AgentCapabilities = top.resderx.rac.a2a.AgentCapabilities(),
     val skills: List<top.resderx.rac.a2a.AgentSkill> = emptyList(),
     val defaultInputModes: List<String> = emptyList(),
     val defaultOutputModes: List<String> = emptyList(),

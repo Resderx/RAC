@@ -52,16 +52,16 @@ suspend fun top.resderx.rac.dsl.Llm.chatWithA2aAgent(
     onUpdate: suspend (top.resderx.rac.a2a.A2aStreamEvent) -> Unit = {},
 ): top.resderx.rac.messages.AIMessage {
     // 1. 构造发送参数——user 角色的 TextPart
-    val params = _root_ide_package_.top.resderx.rac.a2a.SendStreamingMessageParams(
-        message = _root_ide_package_.top.resderx.rac.a2a.Message(
-            role = _root_ide_package_.top.resderx.rac.a2a.Role.USER,
-            parts = listOf(_root_ide_package_.top.resderx.rac.a2a.TextPart(text = prompt)),
+    val params = top.resderx.rac.a2a.SendStreamingMessageParams(
+        message = top.resderx.rac.a2a.Message(
+            role = top.resderx.rac.a2a.Role.USER,
+            parts = listOf(top.resderx.rac.a2a.TextPart(text = prompt)),
         ),
     )
 
     // 2. 累积 Agent 响应文本
     val contentBuilder = StringBuilder()
-    var finalTaskState: top.resderx.rac.a2a.TaskState = _root_ide_package_.top.resderx.rac.a2a.TaskState.COMPLETED
+    var finalTaskState: top.resderx.rac.a2a.TaskState = top.resderx.rac.a2a.TaskState.COMPLETED
 
     // 3. 发送流式请求并收集更新
     client.sendStreamingMessage(params).collect { event ->
@@ -89,7 +89,7 @@ suspend fun top.resderx.rac.dsl.Llm.chatWithA2aAgent(
     }
 
     // 4. 映射 TaskState 到 FinishReason 并返回
-    return _root_ide_package_.top.resderx.rac.messages.AIMessage(
+    return top.resderx.rac.messages.AIMessage(
         content = contentBuilder.toString(),
         finishReason = finalTaskState.toFinishReason(),
     )
@@ -120,20 +120,20 @@ suspend fun top.resderx.rac.dsl.Llm.chatWithA2aAgent(
  * @return A2A Agent Server（协议无关分发器，调用方需绑定 HTTP 服务器）
  */
 fun top.resderx.rac.dsl.Llm.serveAsA2aAgent(
-    agentCard: top.resderx.rac.a2a.AgentCard = _root_ide_package_.top.resderx.rac.a2a.AgentCard(
+    agentCard: top.resderx.rac.a2a.AgentCard = top.resderx.rac.a2a.AgentCard(
         name = "rac-agent",
         description = "LLM Agent — Kotlin Multiplatform AI Call Library",
         url = "",
-        provider = _root_ide_package_.top.resderx.rac.a2a.AgentProvider(organization = "ResDerX"),
+        provider = top.resderx.rac.a2a.AgentProvider(organization = "ResDerX"),
     ),
     systemPrompt: String? = null,
 ): top.resderx.rac.a2a.A2aAgentServer {
-    val handler = _root_ide_package_.top.resderx.rac.a2a.LlmA2aAgent(
+    val handler = top.resderx.rac.a2a.LlmA2aAgent(
         llm = this,
         agentCard = agentCard,
         systemPrompt = systemPrompt,
     )
-    return _root_ide_package_.top.resderx.rac.a2a.A2aAgentServer(handler)
+    return top.resderx.rac.a2a.A2aAgentServer(handler)
 }
 
 /**
@@ -148,11 +148,11 @@ fun top.resderx.rac.dsl.Llm.serveAsA2aAgent(
  * - WORKING → UNKNOWN（仍在进行中，不应出现在终态）
  */
 private fun top.resderx.rac.a2a.TaskState.toFinishReason(): top.resderx.rac.messages.FinishReason = when (this) {
-    _root_ide_package_.top.resderx.rac.a2a.TaskState.COMPLETED -> _root_ide_package_.top.resderx.rac.messages.FinishReason.STOP
-    _root_ide_package_.top.resderx.rac.a2a.TaskState.INPUT_REQUIRED -> _root_ide_package_.top.resderx.rac.messages.FinishReason.TOOL_CALLS
-    _root_ide_package_.top.resderx.rac.a2a.TaskState.FAILED -> _root_ide_package_.top.resderx.rac.messages.FinishReason.UNKNOWN
-    _root_ide_package_.top.resderx.rac.a2a.TaskState.CANCELED -> _root_ide_package_.top.resderx.rac.messages.FinishReason.STOP
-    _root_ide_package_.top.resderx.rac.a2a.TaskState.REJECTED -> _root_ide_package_.top.resderx.rac.messages.FinishReason.CONTENT_FILTER
-    _root_ide_package_.top.resderx.rac.a2a.TaskState.AUTH_REQUIRED -> _root_ide_package_.top.resderx.rac.messages.FinishReason.UNKNOWN
-    _root_ide_package_.top.resderx.rac.a2a.TaskState.WORKING -> _root_ide_package_.top.resderx.rac.messages.FinishReason.UNKNOWN
+    top.resderx.rac.a2a.TaskState.COMPLETED -> top.resderx.rac.messages.FinishReason.STOP
+    top.resderx.rac.a2a.TaskState.INPUT_REQUIRED -> top.resderx.rac.messages.FinishReason.TOOL_CALLS
+    top.resderx.rac.a2a.TaskState.FAILED -> top.resderx.rac.messages.FinishReason.UNKNOWN
+    top.resderx.rac.a2a.TaskState.CANCELED -> top.resderx.rac.messages.FinishReason.STOP
+    top.resderx.rac.a2a.TaskState.REJECTED -> top.resderx.rac.messages.FinishReason.CONTENT_FILTER
+    top.resderx.rac.a2a.TaskState.AUTH_REQUIRED -> top.resderx.rac.messages.FinishReason.UNKNOWN
+    top.resderx.rac.a2a.TaskState.WORKING -> top.resderx.rac.messages.FinishReason.UNKNOWN
 }

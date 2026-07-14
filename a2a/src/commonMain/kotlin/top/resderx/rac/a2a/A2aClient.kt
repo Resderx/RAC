@@ -67,7 +67,7 @@ interface A2aClient {
      * @param params 过滤参数
      * @return 匹配的任务列表
      */
-    suspend fun listTasks(params: top.resderx.rac.a2a.ListTasksParams = _root_ide_package_.top.resderx.rac.a2a.ListTasksParams()): top.resderx.rac.a2a.ListTasksResult
+    suspend fun listTasks(params: top.resderx.rac.a2a.ListTasksParams = top.resderx.rac.a2a.ListTasksParams()): top.resderx.rac.a2a.ListTasksResult
 
     /**
      * 取消任务（tasks/cancel）。
@@ -156,4 +156,4 @@ data class A2aClientConfig(
  * @return A2A 客户端实例
  */
 fun A2aClient(config: top.resderx.rac.a2a.A2aClientConfig): top.resderx.rac.a2a.A2aClient =
-    _root_ide_package_.top.resderx.rac.a2a.DefaultA2aClient(config)
+    top.resderx.rac.a2a.DefaultA2aClient(config)
