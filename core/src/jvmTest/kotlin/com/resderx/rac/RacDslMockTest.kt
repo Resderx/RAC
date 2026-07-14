@@ -1,3 +1,17 @@
+/*
+ * Copyright 2026 Resderx
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 package com.resderx.rac
 
 import io.ktor.client.HttpClient
@@ -11,26 +25,28 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import com.resderx.rac.api.completions.CompletionsStreamChunk
-import com.resderx.rac.dsl.RAC
+import kotlin.test.assertTrue
+import com.resderx.rac.dsl.Llm
 import com.resderx.rac.messages.AIMessage
 import com.resderx.rac.messages.FinishReason
+import com.resderx.rac.messages.StreamEvent
 import com.resderx.rac.providers.ApiType
+import com.resderx.rac.providers.ModelConfig
 import com.resderx.rac.providers.ProviderRegistry
 import com.resderx.rac.providers.SimpleModelProvider
 
 /**
  * RAC DSL 集成测试脚手架（JVM MockEngine）。
  *
- * - 作用：用 MockEngine 注入 HttpClient 到 RAC 实例，端到端验证 chat { } / chatStream { } 的 DSL 流程
+ * - 作用：用 MockEngine 注入 HttpClient 到 Llm 实例，端到端验证 chat { } / chatStream { } 的 DSL 流程
  * - 必要性：验证 RequestExecutor → CompletionsClient → Mappers → AIMessage 的完整链路在 Mock 下正常工作
  * - 设计：构建 Completions 类型供应商，用 MockEngine 返回预设 JSON/SSE，验证统一 AIMessage 输出
  * - 边缘：baseUrl 指向 localhost，apiKey 为 null（Mock 不需要真实鉴权）
  */
 class RacDslMockTest {
 
-    /** 创建由 MockEngine 支撑的 RAC 实例，handler 决定 HTTP/SSE 响应。 */
-    private fun racWithMock(handler: MockRequestHandler): RAC {
+    /** 创建由 MockEngine 支撑的 Llm 实例，handler 决定 HTTP/SSE 响应。 */
+    private fun racWithMock(handler: MockRequestHandler): Llm {
         val client = HttpClient(SseCapableMockEngine(handler)) {
             install(SSE)
             install(HttpTimeout)
@@ -40,10 +56,10 @@ class RacDslMockTest {
             baseUrl = "http://localhost",
             apiKey = null,
             defaultApiType = ApiType.COMPLETIONS,
-            defaultModel = "gpt-4",
+            models = mapOf("gpt-4" to ModelConfig()),
         )
         val registry = ProviderRegistry().apply { register(provider) }
-        return RAC(
+        return Llm(
             httpClient = client,
             registry = registry,
             defaultProvider = provider,
@@ -72,12 +88,20 @@ class RacDslMockTest {
         val rac = racWithMock { _ ->
             respond(sseBody, HttpStatusCode.OK, headersOf("Content-Type", "text/event-stream"))
         }
-        val chunks: List<CompletionsStreamChunk> = rac.chatStream {
+        val events: List<StreamEvent> = rac.chatStream {
             user("ping")
         }.toList()
-        assertEquals(2, chunks.size)
-        assertEquals("Hel", chunks[0].choices[0].delta.content)
-        assertEquals("lo", chunks[1].choices[0].delta.content)
+        // 预期：TextDelta("Hel") + TextDelta("lo") + Done
+        assertEquals(3, events.size)
+        assertTrue(events[0] is StreamEvent.TextDelta)
+        assertEquals("Hel", (events[0] as StreamEvent.TextDelta).delta)
+        assertEquals("Hel", (events[0] as StreamEvent.TextDelta).accumulated)
+        assertTrue(events[1] is StreamEvent.TextDelta)
+        assertEquals("lo", (events[1] as StreamEvent.TextDelta).delta)
+        assertEquals("Hello", (events[1] as StreamEvent.TextDelta).accumulated)
+        assertTrue(events[2] is StreamEvent.Done)
+        assertEquals("Hello", (events[2] as StreamEvent.Done).content)
+        assertEquals(FinishReason.STOP, (events[2] as StreamEvent.Done).finishReason)
         rac.httpClient.close()
     }
 }

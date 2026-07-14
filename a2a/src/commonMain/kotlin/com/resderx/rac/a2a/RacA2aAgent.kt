@@ -1,6 +1,20 @@
+/*
+ * Copyright 2026 Resderx
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 package com.resderx.rac.a2a
 
-import com.resderx.rac.dsl.RAC
+import com.resderx.rac.dsl.Llm
 import com.resderx.rac.exceptions.RACException
 import com.resderx.rac.messages.AIMessage
 import com.resderx.rac.messages.FinishReason
@@ -9,15 +23,15 @@ import kotlinx.coroutines.sync.withLock
 import kotlin.random.Random
 
 /**
- * RAC → A2A Agent 适配器——将 RAC 的 LLM 调用能力封装为 A2A Agent。
+ * Llm → A2A Agent 适配器——将 Llm 的 LLM 调用能力封装为 A2A Agent。
  *
  * - 作用：实现 [A2aAgentHandler] 接口，将 A2A 的 tasks/send / tasks/sendSubscribe 请求
- *   转换为 RAC 的 [RAC.chat] 调用，并将 AI 响应映射回 A2A 的 Task / Message 模型
- * - 必要性：使 RAC 能作为 A2A Agent Server 对外提供服务，供任何兼容 A2A 的 Client 调用
+ *   转换为 Llm 的 [Llm.chat] 调用，并将 AI 响应映射回 A2A 的 Task / Message 模型
+ * - 必要性：使 Llm 能作为 A2A Agent Server 对外提供服务，供任何兼容 A2A 的 Client 调用
  * - 设计思路：
  *   1. getAgentCard 返回配置的 Agent Card 元数据
- *   2. sendMessage 将 A2A Message 转为 RAC chat 请求，返回 Task（含 AI 响应为 Message）
- *   3. sendStreamingMessage 同步调用 RAC chat，通过 context 推送 AgentMessageChunk
+ *   2. sendMessage 将 A2A Message 转为 Llm chat 请求，返回 Task（含 AI 响应为 Message）
+ *   3. sendStreamingMessage 同步调用 Llm chat，通过 context 推送 AgentMessageChunk
  *   4. getTask/listTasks/cancelTask 为简化实现（内存任务存储）
  *   5. 任务状态管理：内存 Map 存储任务，Mutex 保护并发访问
  * - 与 [RacAcpAgent] 的差异：
@@ -29,15 +43,15 @@ import kotlin.random.Random
  *   - 非文本 Part（FilePart/DataPart）被忽略，仅提取 TextPart 拼接为 prompt
  *   - AI 响应仅包含文本内容，映射为 Task 的 history 中的 agent Message
  *   - 任务 ID 由 UUID 生成
- * - 时间复杂度：单次 sendMessage O(n) 序列化 + RAC.chat 执行
+ * - 时间复杂度：单次 sendMessage O(n) 序列化 + Llm.chat 执行
  * - 空间复杂度：O(m) tasks Map（m 为历史任务数）
  *
- * @property rac RAC 实例
+ * @property llm Llm 实例
  * @property agentCard Agent Card 元数据
  * @property systemPrompt 系统提示词，可空
  */
-class RacA2aAgent(
-    private val rac: RAC,
+class LlmA2aAgent(
+    private val llm: Llm,
     private val agentCard: AgentCard,
     private val systemPrompt: String? = null,
 ) : A2aAgentHandler {
@@ -95,10 +109,10 @@ class RacA2aAgent(
         Random.nextLong(1, Long.MAX_VALUE).toString(16)
 
     /**
-     * 执行 RAC chat 调用并构造 Task。
+     * 执行 Llm chat 调用并构造 Task。
      *
-     * - 作用：将 A2A 消息转为 RAC chat 请求，执行推理，构造包含 AI 响应的 Task
-     * - 实现：提取文本 → 调用 RAC.chat → 构造 agent Message → 组装 Task
+     * - 作用：将 A2A 消息转为 Llm chat 请求，执行推理，构造包含 AI 响应的 Task
+     * - 实现：提取文本 → 调用 Llm.chat → 构造 agent Message → 组装 Task
      *
      * @param params 发送参数
      * @param isStreaming 是否为流式调用（影响 Task 初始状态）
@@ -106,7 +120,7 @@ class RacA2aAgent(
      */
     private suspend fun executeChat(params: SendMessageParams): Task {
         val promptText = extractText(params.message)
-        val aiMessage: AIMessage = rac.chat {
+        val aiMessage: AIMessage = llm.chat {
             systemPrompt?.let { system(it) }
             user(promptText)
         }

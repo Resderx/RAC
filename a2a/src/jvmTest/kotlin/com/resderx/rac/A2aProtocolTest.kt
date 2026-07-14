@@ -1,3 +1,17 @@
+/*
+ * Copyright 2026 Resderx
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 package com.resderx.rac
 
 import com.resderx.rac.a2a.A2aAgentHandler
@@ -20,11 +34,12 @@ import com.resderx.rac.a2a.TaskStatus
 import com.resderx.rac.a2a.TaskStatusUpdateEvent
 import com.resderx.rac.a2a.TextPart
 import com.resderx.rac.a2a.serveAsA2aAgent
-import com.resderx.rac.dsl.RAC
+import com.resderx.rac.dsl.Llm
 import com.resderx.rac.exceptions.RACException
 import com.resderx.rac.messages.AIMessage
 import com.resderx.rac.messages.FinishReason
 import com.resderx.rac.providers.ApiType
+import com.resderx.rac.providers.ModelConfig
 import com.resderx.rac.providers.ProviderRegistry
 import com.resderx.rac.providers.SimpleModelProvider
 import io.ktor.client.HttpClient
@@ -53,8 +68,8 @@ import kotlin.test.assertTrue
 /**
  * A2A 协议端到端测试（JVM）。
  *
- * - 作用：验证 [A2aAgentServer]（协议分发器）、[RacA2aAgent]（RAC→A2A 适配器）以及
- *   RAC DSL 集成（chatWithA2aAgent / serveAsA2aAgent）的核心协议逻辑
+ * - 作用：验证 [A2aAgentServer]（协议分发器）、[LlmA2aAgent]（Llm→A2A 适配器）以及
+ *   Llm DSL 集成（chatWithA2aAgent / serveAsA2aAgent）的核心协议逻辑
  * - 必要性：A2A 协议涉及 JSON-RPC 方法路由、流式事件 Flow、Task 生命周期管理等机制，
  *   需端到端测试验证消息正确路由与状态同步
  * - 设计：
@@ -347,12 +362,12 @@ class A2aProtocolTest {
         server.close()
     }
 
-    // ==================== RacA2aAgent + DSL 测试 ====================
+    // ==================== LlmA2aAgent + DSL 测试 ====================
 
     /**
-     * 创建由 SseCapableMockEngine 支撑的 RAC 实例，handler 决定 HTTP 响应。
+     * 创建由 SseCapableMockEngine 支撑的 Llm 实例，handler 决定 HTTP 响应。
      */
-    private fun racWithMock(handler: io.ktor.client.engine.mock.MockRequestHandler): RAC {
+    private fun racWithMock(handler: io.ktor.client.engine.mock.MockRequestHandler): Llm {
         val client = HttpClient(SseCapableMockEngine(handler)) {
             install(SSE)
             install(HttpTimeout)
@@ -362,10 +377,10 @@ class A2aProtocolTest {
             baseUrl = "http://localhost",
             apiKey = null,
             defaultApiType = ApiType.COMPLETIONS,
-            defaultModel = "gpt-4",
+            models = mapOf("gpt-4" to ModelConfig()),
         )
         val registry = ProviderRegistry().apply { register(provider) }
-        return RAC(
+        return Llm(
             httpClient = client,
             registry = registry,
             defaultProvider = provider,
@@ -379,7 +394,7 @@ class A2aProtocolTest {
     }
 
     /**
-     * 验证 RacA2aAgent 正确将 A2A 消息转为 RAC chat 调用并构造 Task。
+     * 验证 LlmA2aAgent 正确将 A2A 消息转为 Llm chat 调用并构造 Task。
      */
     @Test
     fun racA2aAgentMapsPromptToChatAndReturnsTask() = runBlocking {
@@ -444,7 +459,7 @@ class A2aProtocolTest {
     }
 
     /**
-     * 验证 RacA2aAgent 流式调用推送正确的事件序列。
+     * 验证 LlmA2aAgent 流式调用推送正确的事件序列。
      */
     @Test
     fun racA2aAgentStreamingPushesUpdates() = runBlocking {

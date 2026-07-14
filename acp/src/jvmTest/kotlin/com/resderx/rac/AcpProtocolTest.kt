@@ -1,3 +1,17 @@
+/*
+ * Copyright 2026 Resderx
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 package com.resderx.rac
 
 import com.resderx.rac.acp.AcpAgentContext
@@ -15,7 +29,7 @@ import com.resderx.rac.acp.InitializeResult
 import com.resderx.rac.acp.ImplementationInfo
 import com.resderx.rac.acp.PermissionOutcome
 import com.resderx.rac.acp.PermissionOutcomeValue
-import com.resderx.rac.acp.RacAcpAgent
+import com.resderx.rac.acp.LlmAcpAgent
 import com.resderx.rac.acp.SessionLoadParams
 import com.resderx.rac.acp.SessionLoadResult
 import com.resderx.rac.acp.SessionNewParams
@@ -26,9 +40,10 @@ import com.resderx.rac.acp.SessionUpdate
 import com.resderx.rac.acp.StopReason
 import com.resderx.rac.acp.chatWithAcpAgent
 import com.resderx.rac.acp.serveAsAcpAgent
-import com.resderx.rac.dsl.RAC
+import com.resderx.rac.dsl.Llm
 import com.resderx.rac.messages.FinishReason
 import com.resderx.rac.providers.ApiType
+import com.resderx.rac.providers.ModelConfig
 import com.resderx.rac.providers.ProviderRegistry
 import com.resderx.rac.providers.SimpleModelProvider
 import io.ktor.client.HttpClient
@@ -553,14 +568,14 @@ class AcpProtocolTest {
         server.close()
     }
 
-    // ==================== RacAcpAgent 测试 ====================
+    // ==================== LlmAcpAgent 测试 ====================
 
     /**
-     * 验证 RacAcpAgent 将 ACP prompt 映射为 RAC chat 调用并推送 AgentMessageChunk。
+     * 验证 LlmAcpAgent 将 ACP prompt 映射为 Llm chat 调用并推送 AgentMessageChunk。
      */
     @Test
     fun racAcpAgentMapsPromptToChatAndPushesUpdates() = runBlocking {
-        // 创建 MockEngine 支撑的 RAC
+        // 创建 MockEngine 支撑的 Llm
         val mockHttpClient = HttpClient(SseCapableMockEngine { _ ->
             respond(
                 """{"id":"1","model":"gpt-4","choices":[{"index":0,"message":{"role":"assistant","content":"Hello from RAC!"},"finish_reason":"stop"}],"usage":{"prompt_tokens":5,"completion_tokens":5,"total_tokens":10}}""",
@@ -576,13 +591,13 @@ class AcpProtocolTest {
             baseUrl = "http://localhost",
             apiKey = null,
             defaultApiType = ApiType.COMPLETIONS,
-            defaultModel = "gpt-4",
+            models = mapOf("gpt-4" to ModelConfig()),
         )
         val registry = ProviderRegistry().apply { register(provider) }
-        val rac = RAC(httpClient = mockHttpClient, registry = registry, defaultProvider = provider)
+        val rac = Llm(httpClient = mockHttpClient, registry = registry, defaultProvider = provider)
 
-        // 创建 RacAcpAgent
-        val agent = RacAcpAgent(rac = rac, systemPrompt = "You are helpful")
+        // 创建 LlmAcpAgent
+        val agent = LlmAcpAgent(llm = rac, systemPrompt = "You are helpful")
 
         // 初始化
         val initResult = agent.initialize(
@@ -626,10 +641,10 @@ class AcpProtocolTest {
         mockHttpClient.close()
     }
 
-    // ==================== RAC DSL 集成测试 ====================
+    // ==================== Llm DSL 集成测试 ====================
 
     /**
-     * 验证 RAC.chatWithAcpAgent 正确累积 Agent 消息并映射 StopReason。
+     * 验证 Llm.chatWithAcpAgent 正确累积 Agent 消息并映射 StopReason。
      */
     @Test
     fun racChatWithAcpAgentAccumulatesAgentMessage() = runBlocking {
@@ -668,13 +683,13 @@ class AcpProtocolTest {
         }
         jobs.add(responderJob)
 
-        // 创建 RAC 实例（chatWithAcpAgent 不直接使用 RAC 的 HTTP 客户端，但需要实例）
-        val rac = RAC(
+        // 创建 Llm 实例（chatWithAcpAgent 不直接使用 Llm 的 HTTP 客户端，但需要实例）
+        val rac = Llm(
             httpClient = HttpClient { install(HttpTimeout) },
             registry = ProviderRegistry(),
             defaultProvider = SimpleModelProvider(
                 name = "mock", baseUrl = "http://localhost", apiKey = null,
-                defaultApiType = ApiType.COMPLETIONS, defaultModel = "gpt-4",
+                defaultApiType = ApiType.COMPLETIONS, models = mapOf("gpt-4" to ModelConfig()),
             ),
         )
 
@@ -693,16 +708,16 @@ class AcpProtocolTest {
     }
 
     /**
-     * 验证 RAC.serveAsAcpAgent 返回未启动的 AcpAgentServer。
+     * 验证 Llm.serveAsAcpAgent 返回未启动的 AcpAgentServer。
      */
     @Test
     fun racServeAsAcpAgentReturnsConfiguredServer() = runBlocking {
-        val rac = RAC(
+        val rac = Llm(
             httpClient = HttpClient { install(HttpTimeout) },
             registry = ProviderRegistry(),
             defaultProvider = SimpleModelProvider(
                 name = "mock", baseUrl = "http://localhost", apiKey = null,
-                defaultApiType = ApiType.COMPLETIONS, defaultModel = "gpt-4",
+                defaultApiType = ApiType.COMPLETIONS, models = mapOf("gpt-4" to ModelConfig()),
             ),
         )
 

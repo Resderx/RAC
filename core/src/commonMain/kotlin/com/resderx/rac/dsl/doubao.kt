@@ -1,21 +1,44 @@
+/*
+ * Copyright 2026 Resderx
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 package com.resderx.rac.dsl
 
-import com.resderx.rac.providers.ProviderConfigBuilder
 import com.resderx.rac.providers.doubao.DoubaoProvider
-import com.resderx.rac.providers.providerConfig
 
 /**
- * 在 rac { } 块内注册 Doubao Seed（火山引擎方舟）供应商。
+ * 在 `providers { }` 块中注册 Doubao（火山引擎方舟）供应商。
  *
- * - 作用：以 DSL 风格注册 Doubao 供应商，封装默认 baseUrl 与模型
- * - 必要性：提供 doubao { } DSL 入口，调用方仅需配置 apiKey 即可使用
- * - 设计思路：通过 ProviderConfigBuilder 收集覆盖项，调用 DoubaoProvider 工厂构造实例后注册
- * - 实现方式：RacBuilder 扩展函数，block 在 ProviderConfigBuilder 作用域内执行
- * - 边缘情况：block 未设置 apiKey 时供应商无鉴权，调用火山方舟接口将返回 401；
- *   生产环境通常需覆盖 model 为实际接入点 ID
+ * 通过 [ProviderDsl] 同时配置连接信息（apiKey/baseUrl/headers）与 `models { }` 子块。
+ * 生产环境通常需在 `models { }` 内覆盖模型为实际接入点 ID。
  *
- * @param block Doubao 供应商配置 lambda，在 ProviderConfigBuilder 作用域内执行
+ * 示例：
+ * ```
+ * llm {
+ *     providers {
+ *         doubao {
+ *             apiKey("...")
+ *             models {
+ *                 model("doubao-seed-1-6") { maxTokens = 4096 }
+ *             }
+ *         }
+ *     }
+ * }
+ * ```
+ *
+ * @param block 在 [ProviderDsl] 作用域内配置连接与模型
  */
-fun RacBuilder.doubao(block: ProviderConfigBuilder.() -> Unit) {
-    registerProvider(DoubaoProvider(providerConfig(block)))
+fun ProvidersBuilder.doubao(block: ProviderDsl.() -> Unit) {
+    val dsl = ProviderDsl().apply(block)
+    register(DoubaoProvider(dsl.buildConfig(), dsl.buildModels()))
 }

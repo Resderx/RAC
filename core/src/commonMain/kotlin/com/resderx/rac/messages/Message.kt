@@ -1,19 +1,41 @@
+/*
+ * Copyright 2026 Resderx
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
+@file:OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+
 package com.resderx.rac.messages
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonClassDiscriminator
 
 /**
  * 对话消息密封接口，统一抽象对话历史中的各类消息。
  *
  * - 作用：抽象对话历史中的一条消息，覆盖 system/user/assistant/tool 四种角色
  * - 必要性：跨供应商统一消息表达，DSL 用 `List<Message>` 描述完整对话上下文
- * - 设计思路：密封接口限制子类型为已知四种，编译期穷尽匹配；序列化判别符默认为 `type`，
- *   子类用 `@SerialName` 指定 OpenAI role 值，便于 API 客户端直接映射
- * - 实现方式：接口标注 `@Serializable`，每个子类用 `@SerialName` 区分；调用方 Json 实例需开启多态支持
+ * - 设计思路：密封接口限制子类型为已知四种，编译期穷尽匹配；序列化判别符为 `role`
+ *   （OpenAI/Anthropic API 约定），子类用 `@SerialName` 指定 role 值（system/user/assistant/tool），
+ *   序列化产物形如 `{"role":"system","content":"..."}`，与各家 API 期望格式一致
+ * - 实现方式：接口标注 `@Serializable` 与 `@JsonClassDiscriminator("role")`，每个子类用 `@SerialName`
+ *   区分；调用方 Json 实例需开启多态支持（sealed class 默认支持）
  * - 边缘情况：API 客户端把各家供应商的消息字段映射到对应子类；流式场景下 assistant 消息可能分片到达，
  *   由客户端聚合后再产出完整 AssistantMessage
+ * - 注意：`@JsonClassDiscriminator("role")` 自动生成 `role` 字段，子类不得再声明同名属性，
+ *   否则触发 `JsonEncodingException`（参见 kotlinx.serialization 多态机制）
  */
+@JsonClassDiscriminator("role")
 @Serializable
 sealed interface Message
 
@@ -77,8 +99,8 @@ data class UserMessage(
 @SerialName("assistant")
 data class AssistantMessage(
     val content: String? = null,
-    val toolCalls: List<ToolCall> = emptyList(),
-    val reasoningContent: String? = null,
+    @SerialName("tool_calls") val toolCalls: List<ToolCall> = emptyList(),
+    @SerialName("reasoning_content") val reasoningContent: String? = null,
 ) : Message
 
 /**
@@ -97,6 +119,6 @@ data class AssistantMessage(
 @Serializable
 @SerialName("tool")
 data class ToolMessage(
-    val toolCallId: String,
+    @SerialName("tool_call_id") val toolCallId: String,
     val content: String,
 ) : Message

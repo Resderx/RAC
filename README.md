@@ -540,6 +540,8 @@ $env:GRADLE_USER_HOME='D:\AppData\Gradle'; .\gradlew.bat :core:jvmTest
 
 ## 文档
 
+- [完整使用文档](docs/usage.md) — 所有模块、所有方法、所有配置项的完整 API 参考
+- [快速入门](docs/quickstart.md) — 5 分钟完成安装、配置与第一次调用
 - [供应商详解](docs/providers.md) — 11 家供应商的 baseUrl、默认模型、鉴权方式、已知限制
 - [API 协议](docs/api-styles.md) — Completions / Responses / Anthropic 三种协议的字段映射与选用指南
 - [ACP 协议](docs/acp.md) — Agent Client Protocol 双向支持：Client 调用外部 Agent、Server 暴露 RAC 为 Agent

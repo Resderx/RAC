@@ -1,3 +1,17 @@
+/*
+ * Copyright 2026 Resderx
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 // rac-kmp.gradle.kts — RAC 项目 KMP 约定插件
 //
 // - 作用：统一配置所有子模块的 Kotlin Multiplatform 目标平台、依赖版本、Maven 发布元数据
@@ -45,7 +59,6 @@ kotlin {
 
     js {
         useEsModules()
-        useCommonJs()
         generateTypeScriptDefinitions()
         binaries.executable()
 
@@ -55,7 +68,10 @@ kotlin {
 
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
+        useEsModules()
+        generateTypeScriptDefinitions()
         binaries.executable()
+
         browser()
         nodejs()
     }
@@ -136,9 +152,9 @@ mavenPublishing {
     // POM 元数据
     pom {
         name.set("RAC — ${project.name}")
-        description.set("ResDerX AI Call — Kotlin Multiplatform AI 模型调用库")
+        description.set("Resderx AI Call — Kotlin Multiplatform AI 模型调用库")
         inceptionYear.set("2026")
-        url.set("https://github.com/ResDerX/RAC")
+        url.set("https://github.com/Resderx/RAC")
 
         licenses {
             license {
@@ -149,16 +165,16 @@ mavenPublishing {
 
         developers {
             developer {
-                id.set("ResDerX")
-                name.set("ResDerX")
-                url.set("https://github.com/ResDerX")
+                id.set("Resderx")
+                name.set("Resderx")
+                url.set("https://github.com/Resderx")
             }
         }
 
         scm {
-            url.set("https://github.com/ResDerX/RAC")
-            connection.set("scm:git:git://github.com/ResDerX/RAC.git")
-            developerConnection.set("scm:git:ssh://github.com/ResDerX/RAC.git")
+            url.set("https://github.com/Resderx/RAC")
+            connection.set("scm:git:git://github.com/Resderx/RAC.git")
+            developerConnection.set("scm:git:ssh://github.com/Resderx/RAC.git")
         }
     }
 }

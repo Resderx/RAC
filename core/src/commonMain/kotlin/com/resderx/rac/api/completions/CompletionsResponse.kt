@@ -1,3 +1,17 @@
+/*
+ * Copyright 2026 Resderx
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 package com.resderx.rac.api.completions
 
 import com.resderx.rac.messages.Usage
@@ -38,17 +52,43 @@ data class ResponseMessage(
     val toolCalls: List<ToolCallResponse>? = null,
 )
 
-/** 工具调用响应。 */
+/**
+ * 工具调用响应。
+ *
+ * - 作用：封装模型返回的工具调用信息（id + type + function 详情）
+ * - 必要性：非流式与流式响应均使用此类型；流式场景下 id/function 可能分片到达
+ * - 设计：index 标识流式场景下的工具调用序号（非流式默认 0）；
+ *   id 与 function 设为可空，因流式后续 chunk 可能仅含 arguments 片段而无 id/name
+ * - 边缘：非流式响应中 id/function 始终非空；流式首帧含 id 和 function.name，
+ *   后续帧 id 为 null、function.name 为 null、仅 function.arguments 有值
+ *
+ * @property index 工具调用索引，流式场景用于区分多个并行工具调用，默认 0
+ * @property id 工具调用唯一标识，流式后续帧可能为 null
+ * @property type 调用类型，固定 "function"，默认 "function"
+ * @property function 函数调用详情，流式后续帧可能仅含 arguments 片段
+ */
 @Serializable
 data class ToolCallResponse(
-    val id: String,
-    val type: String = "function",
-    val function: FunctionCall,
+    val index: Int = 0,
+    val id: String? = null,
+    val type: String? = "function",
+    val function: FunctionCall? = null,
 )
 
-/** 函数调用详情。 */
+/**
+ * 函数调用详情。
+ *
+ * - 作用：封装工具调用的函数名与参数 JSON
+ * - 必要性：工具调用的核心载荷
+ * - 设计：name 与 arguments 设为可空，因流式后续帧仅含 arguments 片段，name 为 null
+ * - 边缘：非流式中 name/arguments 始终非空；流式首帧 name 有值、arguments 可能为空串，
+ *   后续帧 name 为 null、arguments 为参数片段
+ *
+ * @property name 函数名称，流式后续帧可能为 null
+ * @property arguments 参数 JSON 字符串，流式场景需由调用方累积拼接
+ */
 @Serializable
 data class FunctionCall(
-    val name: String,
-    val arguments: String,
+    val name: String? = null,
+    val arguments: String? = null,
 )

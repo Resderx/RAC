@@ -1,10 +1,25 @@
+/*
+ * Copyright 2026 Resderx
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 package com.resderx.rac
 
-import com.resderx.rac.dsl.RAC
+import com.resderx.rac.dsl.Llm
 import com.resderx.rac.messages.AIMessage
 import com.resderx.rac.messages.FinishReason
 import com.resderx.rac.messages.ToolCall
 import com.resderx.rac.providers.ApiType
+import com.resderx.rac.providers.ModelConfig
 import com.resderx.rac.providers.ProviderRegistry
 import com.resderx.rac.providers.SimpleModelProvider
 import io.ktor.client.HttpClient
@@ -23,7 +38,7 @@ import kotlin.test.assertTrue
 /**
  * 多轮工具调用循环测试（JVM MockEngine）。
  *
- * - 作用：端到端验证 [RAC.chatWithTools] 的多轮工具调用闭环——
+ * - 作用：端到端验证 [Llm.chatWithTools] 的多轮工具调用闭环——
  *   模型返回 toolCalls → 执行工具 → 回写 ToolMessage → 模型返回最终答案
  * - 必要性：工具调用循环是 Agent 流程的核心，需验证对话历史正确累积、工具回执正确注入、
  *   循环终止条件（无 toolCalls 或达 maxRounds）正确触发
@@ -37,12 +52,12 @@ import kotlin.test.assertTrue
 class ToolLoopTest {
 
     /**
-     * 创建由 SseCapableMockEngine 支撑的 RAC 实例，handler 决定 HTTP 响应。
+     * 创建由 SseCapableMockEngine 支撑的 Llm 实例，handler 决定 HTTP 响应。
      *
      * @param handler Mock 请求处理器
-     * @return 配置好的 RAC 实例（Completions 协议，defaultModel="gpt-4"）
+     * @return 配置好的 Llm 实例（Completions 协议，defaultModel="gpt-4"）
      */
-    private fun racWithMock(handler: MockRequestHandler): RAC {
+    private fun racWithMock(handler: MockRequestHandler): Llm {
         val client = HttpClient(SseCapableMockEngine(handler)) {
             install(SSE)
             install(HttpTimeout)
@@ -52,10 +67,10 @@ class ToolLoopTest {
             baseUrl = "http://localhost",
             apiKey = null,
             defaultApiType = ApiType.COMPLETIONS,
-            defaultModel = "gpt-4",
+            models = mapOf("gpt-4" to ModelConfig()),
         )
         val registry = ProviderRegistry().apply { register(provider) }
-        return RAC(
+        return Llm(
             httpClient = client,
             registry = registry,
             defaultProvider = provider,

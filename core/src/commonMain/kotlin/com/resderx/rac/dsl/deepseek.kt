@@ -1,40 +1,49 @@
+/*
+ * Copyright 2026 Resderx
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 package com.resderx.rac.dsl
 
-import com.resderx.rac.providers.ProviderConfigBuilder
 import com.resderx.rac.providers.deepseek.DeepSeekProvider
-import com.resderx.rac.providers.providerConfig
 
 /**
- * 在 rac { } 块中注册 DeepSeek 供应商。
+ * 在 `providers { }` 块中注册 DeepSeek 供应商。
  *
- * - 作用：以 DSL 风格在 RacBuilder 内注册 DeepSeek 供应商，等价于
- *   `registerProvider(DeepSeekProvider(providerConfig { ... }))`，但更简洁
- * - 必要性：作为 Task 9 供应商 DSL 扩展的一部分，提供 `deepseek { }` 顶层入口，
- *   避免调用方手动拼装 ProviderConfig 与 DeepSeekProvider
- * - 设计思路：将 [ProviderConfigBuilder] 的 DSL lambda 透传给 [providerConfig] 构建不可变配置，
- *   再交给 [DeepSeekProvider] 工厂产出 [com.resderx.rac.providers.ModelProvider]，最终通过
- *   内部 `registerProvider` 注册到 RacBuilder.registry
- * - 实现方式：RacBuilder 的扩展函数，接收带接收者的 lambda；调用 internal registerProvider
- * - 边缘情况：空 lambda 会使用 DeepSeek 全默认配置（baseUrl/apiKey/model 沿用工厂默认）；
- *   切换到 V4-Pro 推理模型需在 lambda 中显式 `model("deepseek-v4-pro")`；
- *   apiKey 未设置时生产调用会鉴权失败
- * - 优点：与 `openai { }` / `anthropic { }` 对称，DSL 风格统一
- *
- * 模型迁移提示：旧模型名 `deepseek-chat`/`deepseek-reasoner` 将于 2026-07-24 停用，
- * 自 v0.2.0 起默认模型已切换为 `deepseek-v4-flash`。
+ * - 作用：以 DSL 风格在 [ProvidersBuilder] 内注册 DeepSeek 供应商
+ * - 必要性：提供 `deepseek { }` 入口，避免调用方手动拼装 ProviderConfig、ModelsBuilder 与 DeepSeekProvider
+ * - 设计思路：lambda 内通过 [ProviderDsl] 同时承载连接配置（apiKey/baseUrl/headers）与
+ *   `models { }` 子块，使两类配置在单一 lambda 内完成
+ * - 边缘情况：空 lambda 使用 DeepSeek 全默认配置（默认 baseUrl + 默认模型 deepseek-v4-flash）；
+ *   `models { }` 块为空时由工厂函数回落到默认模型
  *
  * 示例：
  * ```
- * rac {
- *     deepseek {
- *         apiKey("sk-...")
- *         model("deepseek-v4-pro")  // 切换到 V4-Pro 推理模型
+ * llm {
+ *     providers {
+ *         deepseek {
+ *             apiKey("sk-...")
+ *             models {
+ *                 model("deepseek-v4-flash") { maxTokens = 4096 }
+ *                 model("deepseek-v4-pro") { reasoningEffort = "high" }
+ *             }
+ *         }
  *     }
  * }
  * ```
  *
- * @param block 在 ProviderConfigBuilder 作用域内配置 DeepSeek 的覆盖项
+ * @param block 在 [ProviderDsl] 作用域内配置连接与模型
  */
-fun RacBuilder.deepseek(block: ProviderConfigBuilder.() -> Unit) {
-    registerProvider(DeepSeekProvider(providerConfig(block)))
+fun ProvidersBuilder.deepseek(block: ProviderDsl.() -> Unit) {
+    val dsl = ProviderDsl().apply(block)
+    register(DeepSeekProvider(dsl.buildConfig(), dsl.buildModels()))
 }

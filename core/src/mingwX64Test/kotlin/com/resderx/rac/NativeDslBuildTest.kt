@@ -1,6 +1,20 @@
+/*
+ * Copyright 2026 Resderx
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 package com.resderx.rac
 
-import com.resderx.rac.dsl.rac
+import com.resderx.rac.dsl.llm
 import com.resderx.rac.dsl.deepseek
 import com.resderx.rac.dsl.openai
 import com.resderx.rac.dsl.ollama
@@ -13,6 +27,7 @@ import com.resderx.rac.dsl.qwen
 import com.resderx.rac.dsl.mimo
 import com.resderx.rac.dsl.gemini
 import com.resderx.rac.providers.ApiType
+import com.resderx.rac.providers.ModelConfig
 import com.resderx.rac.providers.ProviderConfig
 import com.resderx.rac.providers.ProviderRegistry
 import com.resderx.rac.providers.SimpleModelProvider
@@ -26,18 +41,20 @@ import kotlin.test.assertNull
 /**
  * mingwX64 原生平台 DSL 构建与供应商注册测试。
  *
- * - 作用：验证 rac { } DSL 与供应商工厂在 Windows 原生平台正确工作
+ * - 作用：验证 llm { } DSL 与供应商工厂在 Windows 原生平台正确工作
  * - 必要性：Kotlin/Native 的类加载与反射限制可能影响 DSL，需独立验证
- * - 设计：构建 RAC 实例并断言注册表内容，不触网
+ * - 设计：构建 Llm 实例并断言注册表内容，不触网
  * - 边缘：未注册供应商时 build() 抛异常；registry.get 未找到抛异常
  */
 class NativeDslBuildTest {
 
     @Test
     fun racBuilderRegistersDeepSeek() {
-        val ai = rac {
-            deepseek {
-                apiKey("test-key")
+        val ai = llm {
+            providers {
+                deepseek {
+                    apiKey("test-key")
+                }
             }
         }
         assertEquals("deepseek", ai.defaultProvider.name)
@@ -48,10 +65,12 @@ class NativeDslBuildTest {
 
     @Test
     fun racBuilderRegistersMultipleProviders() {
-        val ai = rac {
-            openai { apiKey("k1") }
-            deepseek { apiKey("k2") }
-            anthropic { apiKey("k3") }
+        val ai = llm {
+            providers {
+                openai { apiKey("k1") }
+                deepseek { apiKey("k2") }
+                anthropic { apiKey("k3") }
+            }
         }
         assertTrue("openai" in ai.registry)
         assertTrue("deepseek" in ai.registry)
@@ -62,7 +81,7 @@ class NativeDslBuildTest {
     @Test
     fun racBuilderThrowsWhenNoProviderRegistered() {
         assertFailsWith<RACException> {
-            rac { }
+            llm { }
         }
     }
 
@@ -86,7 +105,7 @@ class NativeDslBuildTest {
                 name = "test",
                 baseUrl = "http://x",
                 defaultApiType = ApiType.COMPLETIONS,
-                defaultModel = "m",
+                models = mapOf("m" to ModelConfig()),
             ),
         )
         assertTrue("test" in registry)
@@ -94,8 +113,10 @@ class NativeDslBuildTest {
 
     @Test
     fun ollamaProviderLocalDefaults() {
-        val ai = rac {
-            ollama { }
+        val ai = llm {
+            providers {
+                ollama { }
+            }
         }
         assertEquals("ollama", ai.defaultProvider.name)
         assertNull(ai.defaultProvider.apiKey)
@@ -105,8 +126,10 @@ class NativeDslBuildTest {
 
     @Test
     fun anthropicProviderHasVersionHeader() {
-        val ai = rac {
-            anthropic { apiKey("test") }
+        val ai = llm {
+            providers {
+                anthropic { apiKey("test") }
+            }
         }
         assertEquals("2023-06-01", ai.defaultProvider.defaultHeaders["anthropic-version"])
         assertEquals(ApiType.ANTHROPIC, ai.defaultProvider.defaultApiType)
@@ -114,14 +137,16 @@ class NativeDslBuildTest {
 
     @Test
     fun allProvidersHaveCorrectDefaults() {
-        val ai = rac {
-            kimi { apiKey("k") }
-            glm { apiKey("k") }
-            minimax { apiKey("k") }
-            doubao { apiKey("k") }
-            qwen { apiKey("k") }
-            mimo { apiKey("k") }
-            gemini { apiKey("k") }
+        val ai = llm {
+            providers {
+                kimi { apiKey("k") }
+                glm { apiKey("k") }
+                minimax { apiKey("k") }
+                doubao { apiKey("k") }
+                qwen { apiKey("k") }
+                mimo { apiKey("k") }
+                gemini { apiKey("k") }
+            }
         }
         val kimi = ai.registry.get("kimi")
         assertEquals("https://api.moonshot.cn/v1", kimi.baseUrl)

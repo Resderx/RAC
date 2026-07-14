@@ -1,0 +1,110 @@
+# build.yml — RAC 项目持续集成（CI）工作流
+#
+# - 作用：在每次 push/PR 到 main 分支时执行全量构建与测试，确保 4 个模块
+#   （core/mcp/acp/a2a）的 KMP 多平台代码正确性
+# - 触发：push 到 main/master、PR 到 main/master、手动触发
+# - 策略：矩阵构建——Ubuntu（JVM/Linux targets）、Windows（mingwX64）、macOS（iOS/macOS targets）
+# - 跨平台覆盖：
+#   - Ubuntu：JVM 测试 + LinuxX64/Arm64 编译
+#   - Windows：JVM 测试 + mingwX64 测试
+#   - macOS：JVM 测试 + iOS模拟器 + macOSArm64 编译
+# - 缓存：Gradle 依赖与 Konan（Kotlin/Native 工具链）缓存加速构建
+# - 失败处理：任一矩阵任务失败即整体失败；上传测试报告作为 artifact
+
+name: Build & Test
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+
+# 取消同一分支上未完成的旧运行，节省 CI 资源
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ──────────────────────────────────────────────────────────────────────────
+  # 矩阵构建：在三大平台上并行运行 JVM + 平台原生测试
+  # ──────────────────────────────────────────────────────────────────────────
+  build:
+    name: Build & Test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false  # 一个平台失败不取消其他平台，便于定位问题
+      matrix:
+        os: [ ubuntu-latest, windows-latest, macos-latest ]
+
+    steps:
+      # ── 1. 检出代码 ──────────────────────────────────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ── 2. 配置 JDK ──────────────────────────────────────────────────────
+      # KMP 编译需要 JDK 17+；Gradle 8.x+ 推荐 JDK 21
+      - name: Setup JDK 25
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+
+      # ── 3. 配置 Gradle ────────────────────────────────────────────────────
+      # 使用 gradle/actions/setup-gradle 自动注入缓存与 Develocity 配置
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          # 缓存 Gradle 依赖与构建输出，命中时跳过下载
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+
+      # ── 4. 缓存 Konan（Kotlin/Native 工具链） ─────────────────────────────
+      # Kotlin/Native 编译需要平台特定的工具链（llvm、sysroot 等），体积大
+      - name: Cache Konan
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.konan
+          key: konan-${{ matrix.os }}-${{ hashFiles('**/*.gradle.kts', 'gradle/libs.versions.toml') }}
+          restore-keys: |
+            konan-${{ matrix.os }}-
+
+      # ── 5. 执行全量构建与测试 ─────────────────────────────────────────────
+      # --continue：即使部分任务失败也继续执行其他任务，便于一次性发现所有问题
+      # :test：仅运行 JVM 测试（所有平台都支持 JVM）
+      # 各平台特定的原生测试在下方分平台步骤中执行
+      - name: Build all modules & run JVM tests
+        run: ./gradlew build --continue --no-daemon
+        shell: bash  # 跨平台一致的 shell
+
+      # ── 6. 平台特定原生测试 ───────────────────────────────────────────────
+      # Ubuntu: Linux x64 编译验证（不运行测试，Linux 原生测试需 Linux 环境）
+      - name: Compile Linux targets (Ubuntu)
+        if: runner.os == 'Linux'
+        run: ./gradlew compileKotlinLinuxX64 compileKotlinLinuxArm64 --no-daemon
+        shell: bash
+
+      # Windows: mingwX64 测试（在 Windows 上运行 Kotlin/Native 测试）
+      - name: Run mingwX64 tests (Windows)
+        if: runner.os == 'Windows'
+        run: ./gradlew mingwX64Test --no-daemon
+        shell: pwsh
+
+      # macOS: iOS 模拟器编译 + macOSArm64 编译（不运行测试，需模拟器环境）
+      - name: Compile Apple targets (macOS)
+        if: runner.os == 'macOS'
+        run: ./gradlew compileKotlinIosArm64 compileKotlinIosSimulatorArm64 compileKotlinMacosArm64 --no-daemon
+        shell: bash
+
+      # ── 7. 上传测试报告 ───────────────────────────────────────────────────
+      # 测试失败时上传报告，便于调试
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports-${{ matrix.os }}
+          path: |
+            **/build/reports/tests/
+            **/build/test-results/
+          if-no-files-found: ignore
+          retention-days: 7

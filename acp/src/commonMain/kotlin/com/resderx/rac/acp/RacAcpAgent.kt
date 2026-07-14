@@ -1,6 +1,20 @@
+/*
+ * Copyright 2026 Resderx
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 package com.resderx.rac.acp
 
-import com.resderx.rac.dsl.RAC
+import com.resderx.rac.dsl.Llm
 import com.resderx.rac.exceptions.RACException
 import com.resderx.rac.messages.AudioContent
 import com.resderx.rac.messages.AIMessage
@@ -18,16 +32,16 @@ import kotlinx.coroutines.sync.withLock
 import kotlin.concurrent.Volatile
 
 /**
- * RAC 到 ACP Agent 的适配器，将 RAC 的 AI 调用能力暴露为 ACP Agent。
+ * Llm 到 ACP Agent 的适配器，将 Llm 的 AI 调用能力暴露为 ACP Agent。
  *
- * - 作用：实现 [AcpAgentHandler]，将 ACP 协议的 session/prompt 请求映射为 RAC 的 [RAC.chat] 调用，
- *   使任何 ACP 兼容的 Client（如 Zed、JetBrains IDE）都能通过 ACP 调用 RAC 管理的 AI 供应商
+ * - 作用：实现 [AcpAgentHandler]，将 ACP 协议的 session/prompt 请求映射为 Llm 的 [Llm.chat] 调用，
+ *   使任何 ACP 兼容的 Client（如 Zed、JetBrains IDE）都能通过 ACP 调用 Llm 管理的 AI 供应商
  * - 必要性：RAC 库需要支持作为 ACP Agent 运行（Server 角色），与 Client 角色对称；
- *   RacAcpAgent 桥接 ACP 协议语义与 RAC 的 AI 调用语义
+ *   LlmAcpAgent 桥接 ACP 协议语义与 Llm 的 AI 调用语义
  * - 设计思路：
  *   1. 会话管理：sessions Map 维护每个 ACP 会话的对话历史（List<Message>），跨轮次保持上下文
  *   2. 内容转换：ACP ContentBlock → RAC Content（text/image/audio 直接映射，resource 转文本）
- *   3. 提示处理：将 ACP prompt 转为 RAC UserMessage → 追加到历史 → 调用 rac.chat → 推送 AgentMessageChunk
+ *   3. 提示处理：将 ACP prompt 转为 RAC UserMessage → 追加到历史 → 调用 llm.chat → 推送 AgentMessageChunk
  *   4. 停止原因映射：RAC FinishReason → ACP StopReason
  *   5. 可选系统提示：构造时配置 systemPrompt，每次 chat 调用时注入
  * - 实现：
@@ -44,16 +58,16 @@ import kotlin.concurrent.Volatile
  * - 时间复杂度：sessionPrompt 为 O(H + N)，H 为历史消息数（replay），N 为响应解析
  * - 空间复杂度：O(S * H)，S 为会话数，H 为平均历史长度
  *
- * @property rac RAC 实例，提供 AI 调用能力
+ * @property llm Llm 实例，提供 AI 调用能力
  * @property agentInfo Agent 实现信息
  * @property agentCapabilities Agent 能力声明
  * @property systemPrompt 系统提示词，每次 chat 调用时注入；null 表示不注入
  */
-class RacAcpAgent(
-    private val rac: RAC,
+class LlmAcpAgent(
+    private val llm: Llm,
     private val agentInfo: ImplementationInfo = ImplementationInfo(
         name = "rac-agent",
-        title = "RAC Agent",
+        title = "LLM Agent",
         version = "0.2.0",
     ),
     private val agentCapabilities: AgentCapabilities = AgentCapabilities(),
@@ -128,7 +142,7 @@ class RacAcpAgent(
         return SessionLoadResult()
     }
 
-    /** 处理提示轮次，调用 RAC chat 并流式推送更新。 */
+    /** 处理提示轮次，调用 Llm chat 并流式推送更新。 */
     override suspend fun sessionPrompt(
         params: SessionPromptParams,
         context: AcpAgentContext,
@@ -151,8 +165,8 @@ class RacAcpAgent(
             val userMessage = UserMessage(userText)
             session.messages.add(userMessage)
 
-            // 调用 RAC chat，重放完整对话历史
-            val response = rac.chat {
+            // 调用 Llm chat，重放完整对话历史
+            val response = llm.chat {
                 // 注入系统提示（如果有）
                 if (systemPrompt != null) {
                     system(systemPrompt)
@@ -206,7 +220,7 @@ class RacAcpAgent(
 
     /** 取消当前轮次（简化实现）。 */
     override suspend fun sessionCancel(sessionId: String) {
-        // 简化实现：仅清除活跃标记；完整实现需取消正在进行的 RAC chat 调用
+        // 简化实现：仅清除活跃标记；完整实现需取消正在进行的 Llm chat 调用
         if (activeSessionId == sessionId) {
             activeSessionId = null
         }
