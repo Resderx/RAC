@@ -14,7 +14,6 @@
 
 package top.resderx.rac.a2a
 
-import top.resderx.rac.a2a.toFinishReason
 import top.resderx.rac.dsl.Llm
 import top.resderx.rac.messages.AIMessage
 import top.resderx.rac.messages.FinishReason
@@ -52,7 +51,7 @@ suspend fun top.resderx.rac.dsl.Llm.chatWithA2aAgent(
     onUpdate: suspend (top.resderx.rac.a2a.A2aStreamEvent) -> Unit = {},
 ): top.resderx.rac.messages.AIMessage {
     // 1. 构造发送参数——user 角色的 TextPart
-    val params = top.resderx.rac.a2a.SendStreamingMessageParams(
+    val params = SendStreamingMessageParams(
         message = top.resderx.rac.a2a.Message(
             role = top.resderx.rac.a2a.Role.USER,
             parts = listOf(top.resderx.rac.a2a.TextPart(text = prompt)),

@@ -60,13 +60,6 @@ interface A2aClient {
      * @return 任务当前完整状态
      */
     suspend fun getTask(params: top.resderx.rac.a2a.GetTaskParams): top.resderx.rac.a2a.GetTaskResult
-
-    /**
-     * 列出任务（tasks/list）——按上下文/状态过滤。
-     *
-     * @param params 过滤参数
-     * @return 匹配的任务列表
-     */
     suspend fun listTasks(params: top.resderx.rac.a2a.ListTasksParams = top.resderx.rac.a2a.ListTasksParams()): top.resderx.rac.a2a.ListTasksResult
 
     /**
@@ -149,7 +142,7 @@ data class A2aClientConfig(
 /**
  * 创建 A2A 客户端实例的工厂函数。
  *
- * - 作用：隐藏 [top.resderx.rac.a2a.DefaultA2aClient] 实现细节，仅暴露 [A2aClient] 接口
+ * - 作用：隐藏 [top.resderx.rac.a2a.DefaultA2aClient] 实现细节，仅暴露 [top.resderx.rac.a2a.A2aClient] 接口
  * - 用法：`val client = A2aClient(config)`
  *
  * @param config 客户端配置

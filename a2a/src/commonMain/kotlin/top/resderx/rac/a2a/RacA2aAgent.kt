@@ -118,7 +118,7 @@ class LlmA2aAgent(
      * @param isStreaming 是否为流式调用（影响 Task 初始状态）
      * @return 包含 AI 响应的 Task
      */
-    private suspend fun executeChat(params: top.resderx.rac.a2a.SendMessageParams): top.resderx.rac.a2a.Task {
+    private suspend fun executeChat(params: SendMessageParams): top.resderx.rac.a2a.Task {
         val promptText = extractText(params.message)
         val aiMessage: top.resderx.rac.messages.AIMessage = llm.chat {
             systemPrompt?.let { system(it) }

@@ -18,6 +18,7 @@ import top.resderx.rac.exceptions.RACException
 import top.resderx.rac.mcp.JsonRpcRequest
 import top.resderx.rac.mcp.JsonRpcResponse
 import top.resderx.rac.network.HttpClientFactory
+import top.resderx.rac.network.SSEClient
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
 import io.ktor.client.request.header
@@ -76,7 +77,7 @@ class DefaultA2aClient(
      * 底层 HttpClient——若配置提供则复用，否则自建平台默认引擎实例。
      * - close 时根据 [top.resderx.rac.a2a.A2aClientConfig.ownHttpClient] 决定是否关闭
      */
-    private val httpClient: HttpClient = config.httpClient ?: top.resderx.rac.network.HttpClientFactory.create()
+    private val httpClient: HttpClient = config.httpClient ?: HttpClientFactory.create()
 
     /** JSON-RPC 请求 id 自增计数器。由 [idMutex] 保护。 */
     private var requestId = 0L
@@ -108,8 +109,8 @@ class DefaultA2aClient(
     private suspend fun sendRpcRequest(method: String, params: JsonElement): JsonElement {
         check(!closed) { "A2aClient is closed" }
         val id = idMutex.withLock { ++requestId }
-        val request = top.resderx.rac.mcp.JsonRpcRequest.create(id = id, method = method, params = params)
-        val requestStr = json.encodeToString(top.resderx.rac.mcp.JsonRpcRequest.serializer(), request)
+        val request = JsonRpcRequest.create(id = id, method = method, params = params)
+        val requestStr = json.encodeToString(JsonRpcRequest.serializer(), request)
 
         val responseText = try {
             httpClient.post(config.baseUrl) {
@@ -121,16 +122,16 @@ class DefaultA2aClient(
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            throw top.resderx.rac.exceptions.RACException(
+            throw RACException(
                 "A2A HTTP request '$method' failed: ${e.message}",
                 e
             )
         }
 
         val responseObj = try {
-            json.decodeFromString(top.resderx.rac.mcp.JsonRpcResponse.serializer(), responseText)
+            json.decodeFromString(JsonRpcResponse.serializer(), responseText)
         } catch (e: Exception) {
-            throw top.resderx.rac.exceptions.RACException(
+            throw RACException(
                 "A2A response parse error for '$method': ${e.message}",
                 e
             )
@@ -138,10 +139,10 @@ class DefaultA2aClient(
 
         if (responseObj.isError()) {
             val err = responseObj.error!!
-            throw top.resderx.rac.exceptions.RACException("A2A error [${err.code}]: ${err.message}")
+            throw RACException("A2A error [${err.code}]: ${err.message}")
         }
         return responseObj.result
-            ?: throw top.resderx.rac.exceptions.RACException("A2A response missing 'result' for method '$method'")
+            ?: throw RACException("A2A response missing 'result' for method '$method'")
     }
 
     /**
@@ -184,12 +185,15 @@ class DefaultA2aClient(
     override fun sendStreamingMessage(params: top.resderx.rac.a2a.SendStreamingMessageParams): Flow<top.resderx.rac.a2a.A2aStreamEvent> = flow {
         check(!closed) { "A2aClient is closed" }
         val id = idMutex.withLock { ++requestId }
-        val request = top.resderx.rac.mcp.JsonRpcRequest.create(id = id, method = "tasks/sendSubscribe", params = json.encodeToJsonElement(
-            top.resderx.rac.a2a.SendStreamingMessageParams.serializer(), params))
-        val requestStr = json.encodeToString(top.resderx.rac.mcp.JsonRpcRequest.serializer(), request)
+        val request = JsonRpcRequest.create(
+            id = id,
+            method = "tasks/sendSubscribe",
+            params = json.encodeToJsonElement(top.resderx.rac.a2a.SendStreamingMessageParams.serializer(), params)
+        )
+        val requestStr = json.encodeToString(JsonRpcRequest.serializer(), request)
 
         // 使用 SSE 流式接收事件
-        val sseClient = top.resderx.rac.network.SSEClient(httpClient)
+        val sseClient = SSEClient(httpClient)
         val eventFlow = sseClient.stream(
             urlString = config.baseUrl,
             headers = buildMap {
@@ -216,7 +220,9 @@ class DefaultA2aClient(
             if (hasResult && !hasMethod && !hasEmittedInitial) {
                 val result = obj["result"]!!
                 hasEmittedInitial = true
-                emit(top.resderx.rac.a2a.A2aStreamEvent.Initial(parseSendMessageResult(result)))
+                emit(top.resderx.rac.a2a.A2aStreamEvent.Initial(
+                    parseSendMessageResult(result)
+                ))
                 return@collect
             }
 
@@ -262,7 +268,10 @@ class DefaultA2aClient(
     override suspend fun listTasks(params: top.resderx.rac.a2a.ListTasksParams): top.resderx.rac.a2a.ListTasksResult {
         val paramsJson = json.encodeToJsonElement(top.resderx.rac.a2a.ListTasksParams.serializer(), params)
         val result = sendRpcRequest("tasks/list", paramsJson)
-        return parseResult(result, top.resderx.rac.a2a.ListTasksResult.serializer())
+        return parseResult(
+            result,
+            top.resderx.rac.a2a.ListTasksResult.serializer()
+        )
     }
 
     override suspend fun cancelTask(params: top.resderx.rac.a2a.CancelTaskParams): top.resderx.rac.a2a.CancelTaskResult {
@@ -287,7 +296,7 @@ class DefaultA2aClient(
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            throw top.resderx.rac.exceptions.RACException(
+            throw RACException(
                 "Failed to fetch Agent Card from '$url': ${e.message}",
                 e
             )
@@ -295,7 +304,7 @@ class DefaultA2aClient(
         return try {
             json.decodeFromString(top.resderx.rac.a2a.AgentCard.serializer(), responseText)
         } catch (e: Exception) {
-            throw top.resderx.rac.exceptions.RACException("Agent Card parse error: ${e.message}", e)
+            throw RACException("Agent Card parse error: ${e.message}", e)
         }
     }
 

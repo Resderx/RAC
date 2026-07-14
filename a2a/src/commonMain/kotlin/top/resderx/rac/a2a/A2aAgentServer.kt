@@ -77,7 +77,7 @@ class A2aAgentServer(
      * @return Agent Card 的 JsonElement
      */
     fun getAgentCardJson(): JsonElement = json.encodeToJsonElement(
-        top.resderx.rac.a2a.AgentCard.serializer(), handler.getAgentCard()
+        AgentCard.serializer(), handler.getAgentCard()
     )
 
     /**
