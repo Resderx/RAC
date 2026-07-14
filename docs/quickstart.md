@@ -41,12 +41,12 @@ kotlin {
 
 dependencies {
     commonMain {
-        implementation("com.resderx.rac:core:0.1.0-alpha")
+        implementation("com.resderx.rac:core:0.1.0-alpha01")
     }
     // 按需引入协议模块
-    // commonMain { implementation("com.resderx.rac:mcp:0.1.0-alpha") }
-    // commonMain { implementation("com.resderx.rac:acp:0.1.0-alpha") }
-    // commonMain { implementation("com.resderx.rac:a2a:0.1.0-alpha") }
+    // commonMain { implementation("com.resderx.rac:mcp:0.1.0-alpha01") }
+    // commonMain { implementation("com.resderx.rac:acp:0.1.0-alpha01") }
+    // commonMain { implementation("com.resderx.rac:a2a:0.1.0-alpha01") }
 }
 ```
 
@@ -62,7 +62,7 @@ repositories {
 
 ```kotlin
 dependencies {
-    implementation("com.resderx.rac:core:0.1.0-alpha")
+    implementation("com.resderx.rac:core:0.1.0-alpha01")
 }
 ```
 
