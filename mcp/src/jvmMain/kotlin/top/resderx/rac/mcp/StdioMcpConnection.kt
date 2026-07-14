@@ -14,7 +14,7 @@
 
 package top.resderx.rac.mcp
 
-import com.resderx.rac.exceptions.RACException
+import top.resderx.rac.exceptions.RACException
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock

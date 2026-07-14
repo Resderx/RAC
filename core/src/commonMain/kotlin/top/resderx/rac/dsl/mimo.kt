@@ -14,7 +14,7 @@
 
 package top.resderx.rac.dsl
 
-import com.resderx.rac.providers.mimo.MimoProvider
+import top.resderx.rac.providers.mimo.MimoProvider
 
 /**
  * 在 `providers { }` 块中注册小米 MIMO 供应商。

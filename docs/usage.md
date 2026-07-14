@@ -59,7 +59,7 @@
 顶层 DSL 入口函数，创建并构建 `Llm` 实例。
 
 ```kotlin
-package com.resderx.rac.dsl
+package top.resderx.rac.dsl
 
 inline fun llm(block: LlmBuilder.() -> Unit): Llm
 ```
@@ -122,7 +122,7 @@ class LlmBuilder {
 重试策略数据类，定义网络瞬时错误的自动重试行为。
 
 ```kotlin
-package com.resderx.rac.network
+package top.resderx.rac.network
 
 data class RetryPolicy(
     val maxRetries: Int = 3,
@@ -163,7 +163,7 @@ val ai = llm {
 `providers { }` 块的接收者是 `ProvidersBuilder`，每个供应商通过对应的扩展函数注册：
 
 ```kotlin
-package com.resderx.rac.dsl
+package top.resderx.rac.dsl
 
 fun ProvidersBuilder.deepseek(block: ProviderDsl.() -> Unit)
 fun ProvidersBuilder.openai(block: ProviderDsl.() -> Unit)
@@ -203,7 +203,7 @@ val ai = llm {
 供应商 DSL 作用域，配置连接信息与模型注册。
 
 ```kotlin
-package com.resderx.rac.dsl
+package top.resderx.rac.dsl
 
 @RacDslMarker
 class ProviderDsl {
@@ -234,7 +234,7 @@ class ProviderDsl {
 在 `models { }` 块内注册模型，有两种重载：
 
 ```kotlin
-package com.resderx.rac.dsl
+package top.resderx.rac.dsl
 
 @RacDslMarker
 class ModelsBuilder internal constructor() {
@@ -312,7 +312,7 @@ class ModelBuilder {
 不可变的模型配置数据类，由 `ModelBuilder.build()` 产出。
 
 ```kotlin
-package com.resderx.rac.providers
+package top.resderx.rac.providers
 
 data class ModelConfig(
     val maxTokens: Long? = null,
@@ -337,7 +337,7 @@ data class ModelConfig(
 按供应商区分的枚举类统一实现此接口。
 
 ```kotlin
-package com.resderx.rac.providers.presets
+package top.resderx.rac.providers.presets
 
 interface ModelPreset {
     val modelName: String
@@ -351,7 +351,7 @@ interface ModelPreset {
 
 ### 4.2 10 个供应商枚举
 
-均位于 `com.resderx.rac.providers.presets` 包下，共 43 个模型：
+均位于 `top.resderx.rac.providers.presets` 包下，共 43 个模型：
 
 #### DeepSeekModel（2 个）
 
@@ -447,8 +447,8 @@ interface ModelPreset {
 **使用示例**：
 
 ```kotlin
-import com.resderx.rac.providers.presets.DeepSeekModel
-import com.resderx.rac.providers.presets.OpenAIModel
+import top.resderx.rac.providers.presets.DeepSeekModel
+import top.resderx.rac.providers.presets.OpenAIModel
 
 models {
     model(DeepSeekModel.V4_FLASH)                      // 完全使用预设
@@ -463,7 +463,7 @@ models {
 LLM 顶层入口类，持有所有运行时依赖并提供 chat/respond 系列调用方法。
 
 ```kotlin
-package com.resderx.rac.dsl
+package top.resderx.rac.dsl
 
 class Llm(
     val httpClient: HttpClient,
@@ -621,7 +621,7 @@ fun provider(name: String): ModelProvider
 `chat { }` / `chatStream { }` / `chatWithTools { }` / `anthropicStream { }` 块的接收者。
 
 ```kotlin
-package com.resderx.rac.dsl
+package top.resderx.rac.dsl
 
 @RacDslMarker
 class ChatRequestBuilder {
@@ -708,7 +708,7 @@ ai.chat {
 `respond { }` / `respondStream { }` 块的接收者（Responses API 专用）。
 
 ```kotlin
-package com.resderx.rac.dsl
+package top.resderx.rac.dsl
 
 @RacDslMarker
 class RespondRequestBuilder {
@@ -751,7 +751,7 @@ val resp = ai.respond {
 Agent DSL 入口，声明式配置「LLM + prompts + tools」三要素。
 
 ```kotlin
-package com.resderx.rac.agent
+package top.resderx.rac.agent
 
 inline fun agent(llm: Llm, block: AgentBuilder.() -> Unit): Agent
 ```
@@ -862,7 +862,7 @@ fun runStream(session: Session, input: String): Flow<StreamEvent>
 对话历史容器，记录完整对话历史（不含 system 消息）。
 
 ```kotlin
-package com.resderx.rac.agent
+package top.resderx.rac.agent
 
 class Session {
     val messages: List<Message>
@@ -1057,7 +1057,7 @@ tool("create_user", "创建用户") {
 所有消息类型的根接口，使用 `@JsonClassDiscriminator("role")` 自动生成 `role` 字段。
 
 ```kotlin
-package com.resderx.rac.messages
+package top.resderx.rac.messages
 
 @JsonClassDiscriminator("role")
 @Serializable
@@ -1201,7 +1201,7 @@ enum class FinishReason {
 流式响应的统一语义事件，密封接口含四种事件类型。
 
 ```kotlin
-package com.resderx.rac.messages
+package top.resderx.rac.messages
 
 sealed interface StreamEvent {
 
@@ -1267,14 +1267,14 @@ ai.chatStream { user("hi") }.collect { event ->
 
 ## 12. MCP 扩展
 
-> 需引入 `com.resderx.rac:mcp` 模块。
+> 需引入 `top.resderx.rac:mcp` 模块。
 
 ### `chatWithMcp()`
 
 自动从 MCP 服务器发现工具并注入到对话，复用 `Llm.chatWithTools` 的多轮工具调用循环。
 
 ```kotlin
-package com.resderx.rac.mcp
+package top.resderx.rac.mcp
 
 suspend fun Llm.chatWithMcp(
     mcpClient: McpClient,
@@ -1291,7 +1291,7 @@ suspend fun Llm.chatWithMcp(
 **示例**：
 
 ```kotlin
-import com.resderx.rac.mcp.chatWithMcp
+import top.resderx.rac.mcp.chatWithMcp
 
 val mcpClient = McpClient(McpClientConfig(transport = StdioMcpTransport(...)))
 ai.chatWithMcp(mcpClient) {
@@ -1303,14 +1303,14 @@ ai.chatWithMcp(mcpClient) {
 
 ## 13. ACP 扩展
 
-> 需引入 `com.resderx.rac:acp` 模块。
+> 需引入 `top.resderx.rac:acp` 模块。
 
 ### `chatWithAcpAgent()`
 
 以 ACP Client 身份调用远程 ACP Agent。
 
 ```kotlin
-package com.resderx.rac.acp
+package top.resderx.rac.acp
 
 suspend fun Llm.chatWithAcpAgent(
     client: AcpClient,
@@ -1349,14 +1349,14 @@ fun Llm.serveAsAcpAgent(
 
 ## 14. A2A 扩展
 
-> 需引入 `com.resderx.rac:a2a` 模块。
+> 需引入 `top.resderx.rac:a2a` 模块。
 
 ### `chatWithA2aAgent()`
 
 通过 A2A 协议调用远端 Agent（HTTP + SSE 流式）。
 
 ```kotlin
-package com.resderx.rac.a2a
+package top.resderx.rac.a2a
 
 suspend fun Llm.chatWithA2aAgent(
     client: A2aClient,
@@ -1392,10 +1392,10 @@ fun Llm.serveAsA2aAgent(
 
 ## 15. 异常类型
 
-所有异常位于 `com.resderx.rac.exceptions` 包，均继承自 `RACException`。
+所有异常位于 `top.resderx.rac.exceptions` 包，均继承自 `RACException`。
 
 ```kotlin
-package com.resderx.rac.exceptions
+package top.resderx.rac.exceptions
 
 open class RACException(message: String, cause: Throwable? = null) : Exception(message, cause)
 

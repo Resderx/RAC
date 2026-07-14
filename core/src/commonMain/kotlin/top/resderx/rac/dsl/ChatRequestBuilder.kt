@@ -14,22 +14,22 @@
 
 package top.resderx.rac.dsl
 
-import com.resderx.rac.api.anthropic.AnthropicRequest
-import com.resderx.rac.api.anthropic.AnthropicThinking
-import com.resderx.rac.api.anthropic.toAnthropicTool
-import com.resderx.rac.api.completions.CompletionsRequest
-import com.resderx.rac.api.completions.toCompletionsTool
-import com.resderx.rac.api.responses.ResponsesRequest
-import com.resderx.rac.messages.AssistantMessage
-import com.resderx.rac.messages.Message
-import com.resderx.rac.messages.SystemMessage
-import com.resderx.rac.messages.TextContent
-import com.resderx.rac.messages.ToolCall
-import com.resderx.rac.messages.ToolDefinition
-import com.resderx.rac.messages.ToolMessage
-import com.resderx.rac.messages.UserMessage
-import com.resderx.rac.providers.ModelConfig
-import com.resderx.rac.providers.ModelProvider
+import top.resderx.rac.api.anthropic.AnthropicRequest
+import top.resderx.rac.api.anthropic.AnthropicThinking
+import top.resderx.rac.api.anthropic.toAnthropicTool
+import top.resderx.rac.api.completions.CompletionsRequest
+import top.resderx.rac.api.completions.toCompletionsTool
+import top.resderx.rac.api.responses.ResponsesRequest
+import top.resderx.rac.messages.AssistantMessage
+import top.resderx.rac.messages.Message
+import top.resderx.rac.messages.SystemMessage
+import top.resderx.rac.messages.TextContent
+import top.resderx.rac.messages.ToolCall
+import top.resderx.rac.messages.ToolDefinition
+import top.resderx.rac.messages.ToolMessage
+import top.resderx.rac.messages.UserMessage
+import top.resderx.rac.providers.ModelConfig
+import top.resderx.rac.providers.ModelProvider
 
 /**
  * Chat 请求的 DSL 构建器，以声明式风格构建对话消息列表与生成参数。
@@ -230,8 +230,8 @@ class ChatRequestBuilder {
     /**
      * 批量注入消息列表（用于 Agent 从 Session 注入完整对话历史）。
      *
-     * - 作用：将 [com.resderx.rac.agent.Session] 的 `messages` 快照一次性追加到当前构建器，
-     *   供 [com.resderx.rac.agent.Agent.run] 在调用 `chatWithTools` 前注入上下文
+     * - 作用：将 [top.resderx.rac.agent.Session] 的 `messages` 快照一次性追加到当前构建器，
+     *   供 [top.resderx.rac.agent.Agent.run] 在调用 `chatWithTools` 前注入上下文
      * - 必要性：Agent 需要把多轮对话历史完整传给模型，逐条 `system()`/`user()` 添加繁琐且易错
      * - 可见性：internal，仅供 agent 包内调用，不暴露给外部 DSL 用户
      *

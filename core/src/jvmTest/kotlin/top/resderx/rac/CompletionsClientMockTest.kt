@@ -26,10 +26,10 @@ import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
-import com.resderx.rac.api.completions.CompletionsClient
-import com.resderx.rac.api.completions.CompletionsRequest
-import com.resderx.rac.exceptions.RACApiException
-import com.resderx.rac.network.RequestExecutor
+import top.resderx.rac.api.completions.CompletionsClient
+import top.resderx.rac.api.completions.CompletionsRequest
+import top.resderx.rac.exceptions.RACApiException
+import top.resderx.rac.network.RequestExecutor
 
 /**
  * Completions API 客户端的 JVM MockEngine 测试。

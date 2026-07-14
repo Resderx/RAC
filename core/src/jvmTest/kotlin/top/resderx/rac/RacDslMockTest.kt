@@ -26,14 +26,14 @@ import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
-import com.resderx.rac.dsl.Llm
-import com.resderx.rac.messages.AIMessage
-import com.resderx.rac.messages.FinishReason
-import com.resderx.rac.messages.StreamEvent
-import com.resderx.rac.providers.ApiType
-import com.resderx.rac.providers.ModelConfig
-import com.resderx.rac.providers.ProviderRegistry
-import com.resderx.rac.providers.SimpleModelProvider
+import top.resderx.rac.dsl.Llm
+import top.resderx.rac.messages.AIMessage
+import top.resderx.rac.messages.FinishReason
+import top.resderx.rac.messages.StreamEvent
+import top.resderx.rac.providers.ApiType
+import top.resderx.rac.providers.ModelConfig
+import top.resderx.rac.providers.ProviderRegistry
+import top.resderx.rac.providers.SimpleModelProvider
 
 /**
  * RAC DSL 集成测试脚手架（JVM MockEngine）。

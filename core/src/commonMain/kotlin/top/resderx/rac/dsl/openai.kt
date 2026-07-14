@@ -14,7 +14,7 @@
 
 package top.resderx.rac.dsl
 
-import com.resderx.rac.providers.openai.OpenAIProvider
+import top.resderx.rac.providers.openai.OpenAIProvider
 
 /**
  * 在 `providers { }` 块中注册 OpenAI 供应商。

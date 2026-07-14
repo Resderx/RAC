@@ -14,11 +14,11 @@
 
 package top.resderx.rac.providers.anthropic
 
-import com.resderx.rac.providers.ApiType
-import com.resderx.rac.providers.ModelConfig
-import com.resderx.rac.providers.ModelProvider
-import com.resderx.rac.providers.ProviderConfig
-import com.resderx.rac.providers.SimpleModelProvider
+import top.resderx.rac.providers.ApiType
+import top.resderx.rac.providers.ModelConfig
+import top.resderx.rac.providers.ModelProvider
+import top.resderx.rac.providers.ProviderConfig
+import top.resderx.rac.providers.SimpleModelProvider
 
 /**
  * 工厂函数：创建 Anthropic 供应商的 ModelProvider 实例。
@@ -30,7 +30,7 @@ import com.resderx.rac.providers.SimpleModelProvider
  * - 设计思路：defaultApiType 为 [ApiType.ANTHROPIC] 触发 RAC.chat { } 走 anthropicClient 分支；
  *   defaultHeaders 必须包含 "anthropic-version" → "2023-06-01"，与 config.extraHeaders 合并
  *   （extraHeaders 优先，允许调用方覆盖版本以使用 Beta API）；x-api-key 头不在此处注入，
- *   由 [com.resderx.rac.dsl.RAC.buildHeaders] 根据 defaultApiType == ANTHROPIC 分支动态添加；
+ *   由 [top.resderx.rac.dsl.RAC.buildHeaders] 根据 defaultApiType == ANTHROPIC 分支动态添加；
  *   models 为模型名→配置的 Map，为空时自动注册默认模型 "claude-3-5-sonnet-20241022"（空 ModelConfig）
  * - 实现方式：纯函数，返回 [SimpleModelProvider] data class 实例；name 固定为 "anthropic" 用作注册键
  * - 边缘情况：config.apiKey 为 null 时 buildHeaders 不会添加 x-api-key，生产调用必须显式提供 apiKey；

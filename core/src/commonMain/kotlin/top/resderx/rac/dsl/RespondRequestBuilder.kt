@@ -14,11 +14,11 @@
 
 package top.resderx.rac.dsl
 
-import com.resderx.rac.api.completions.toCompletionsTool
-import com.resderx.rac.api.responses.ResponsesRequest
-import com.resderx.rac.messages.ToolDefinition
-import com.resderx.rac.providers.ModelConfig
-import com.resderx.rac.providers.ModelProvider
+import top.resderx.rac.api.completions.toCompletionsTool
+import top.resderx.rac.api.responses.ResponsesRequest
+import top.resderx.rac.messages.ToolDefinition
+import top.resderx.rac.providers.ModelConfig
+import top.resderx.rac.providers.ModelProvider
 
 /**
  * Respond 请求的 DSL 构建器，用于 Responses API（OpenAI 新协议）。

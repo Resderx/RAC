@@ -14,7 +14,7 @@
 
 package top.resderx.rac.dsl
 
-import com.resderx.rac.providers.doubao.DoubaoProvider
+import top.resderx.rac.providers.doubao.DoubaoProvider
 
 /**
  * 在 `providers { }` 块中注册 Doubao（火山引擎方舟）供应商。

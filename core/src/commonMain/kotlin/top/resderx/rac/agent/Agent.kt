@@ -14,11 +14,11 @@
 
 package top.resderx.rac.agent
 
-import com.resderx.rac.dsl.ChatRequestBuilder
-import com.resderx.rac.dsl.Llm
-import com.resderx.rac.messages.AIMessage
-import com.resderx.rac.messages.AssistantMessage
-import com.resderx.rac.messages.StreamEvent
+import top.resderx.rac.dsl.ChatRequestBuilder
+import top.resderx.rac.dsl.Llm
+import top.resderx.rac.messages.AIMessage
+import top.resderx.rac.messages.AssistantMessage
+import top.resderx.rac.messages.StreamEvent
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
@@ -45,7 +45,7 @@ import kotlinx.coroutines.flow.flow
  *   - systemPrompt 为 null → 请求不含 system 消息，等价于普通 chat
  *   - 无工具注册 → 循环不执行，等价于普通 chat
  *   - 模型持续请求工具达 [maxRounds] → 返回最后一次响应，不抛异常
- *   - 工具反序列化失败 → [ToolRegistry.execute] 抛 [com.resderx.rac.exceptions.RACException]，
+ *   - 工具反序列化失败 → [ToolRegistry.execute] 抛 [top.resderx.rac.exceptions.RACException]，
  *     循环自然中断（异常向上传播）
  * - 优点：开发者体验接近「注解驱动」，但无需 KSP/反射，KMP 全平台兼容；
  *   Session 与 Agent 解耦，可跨 agent 复用同一份对话历史

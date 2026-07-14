@@ -14,7 +14,7 @@
 
 package top.resderx.rac.api.anthropic
 
-import com.resderx.rac.messages.Message
+import top.resderx.rac.messages.Message
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -56,7 +56,7 @@ data class AnthropicRequest(
  * - 设计思路：
  *   1. `type`：取值 "enabled" 或 "disabled"（启用/禁用思考）
  *   2. `budgetTokens`：思考预算上限（token 数），必须小于 [AnthropicRequest.maxTokens]
- * - 实现方式：由 [com.resderx.rac.dsl.ChatRequestBuilder.buildAnthropic] 根据 enableThinking + maxTokens 构造
+ * - 实现方式：由 [top.resderx.rac.dsl.ChatRequestBuilder.buildAnthropic] 根据 enableThinking + maxTokens 构造
  * - 边缘：budget_tokens 必须 > 0 且 < maxTokens，否则 API 返回 400
  *
  * @property type 思考类型，"enabled" 启用扩展思考，"disabled" 禁用

@@ -14,7 +14,7 @@
 
 package top.resderx.rac.dsl
 
-import com.resderx.rac.providers.minimax.MiniMaxProvider
+import top.resderx.rac.providers.minimax.MiniMaxProvider
 
 /**
  * 在 `providers { }` 块中注册 MiniMax 供应商。

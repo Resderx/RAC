@@ -14,7 +14,7 @@
 
 package top.resderx.rac.providers.presets
 
-import com.resderx.rac.providers.ModelConfig
+import top.resderx.rac.providers.ModelConfig
 
 /**
  * 模型预设接口——按供应商区分的枚举类（如 [DeepSeekModel]、[OpenAIModel]）统一实现本接口。

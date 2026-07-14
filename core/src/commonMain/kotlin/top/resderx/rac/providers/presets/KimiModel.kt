@@ -14,7 +14,7 @@
 
 package top.resderx.rac.providers.presets
 
-import com.resderx.rac.providers.ModelConfig
+import top.resderx.rac.providers.ModelConfig
 
 /**
  * 月之暗面 Kimi 供应商的模型预设枚举。

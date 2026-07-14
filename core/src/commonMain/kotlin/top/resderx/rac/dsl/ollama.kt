@@ -14,7 +14,7 @@
 
 package top.resderx.rac.dsl
 
-import com.resderx.rac.providers.ollama.OllamaProvider
+import top.resderx.rac.providers.ollama.OllamaProvider
 
 /**
  * 在 `providers { }` 块中注册 Ollama 供应商。

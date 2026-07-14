@@ -14,14 +14,14 @@
 
 package top.resderx.rac
 
-import com.resderx.rac.dsl.Llm
-import com.resderx.rac.messages.AIMessage
-import com.resderx.rac.messages.FinishReason
-import com.resderx.rac.messages.ToolCall
-import com.resderx.rac.providers.ApiType
-import com.resderx.rac.providers.ModelConfig
-import com.resderx.rac.providers.ProviderRegistry
-import com.resderx.rac.providers.SimpleModelProvider
+import top.resderx.rac.dsl.Llm
+import top.resderx.rac.messages.AIMessage
+import top.resderx.rac.messages.FinishReason
+import top.resderx.rac.messages.ToolCall
+import top.resderx.rac.providers.ApiType
+import top.resderx.rac.providers.ModelConfig
+import top.resderx.rac.providers.ProviderRegistry
+import top.resderx.rac.providers.SimpleModelProvider
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockRequestHandler
 import io.ktor.client.engine.mock.respond
@@ -47,7 +47,7 @@ import kotlin.test.assertTrue
  * - 边缘：baseUrl 指向 localhost，apiKey 为 null（Mock 不需鉴权）；
  *   maxRounds 上限测试验证达到上限时返回最后响应（finishReason=TOOL_CALLS）
  * - 模块拆分：MCP 工具调用循环测试（chatWithMcp）已迁移至 rac-mcp 模块的
- *   com.resderx.rac.ToolLoopTest，本测试仅验证 core 的 chatWithTools
+ *   top.resderx.rac.ToolLoopTest，本测试仅验证 core 的 chatWithTools
  */
 class ToolLoopTest {
 

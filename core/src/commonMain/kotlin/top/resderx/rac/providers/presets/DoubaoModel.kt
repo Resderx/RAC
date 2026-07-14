@@ -14,7 +14,7 @@
 
 package top.resderx.rac.providers.presets
 
-import com.resderx.rac.providers.ModelConfig
+import top.resderx.rac.providers.ModelConfig
 
 /**
  * 字节跳动豆包（Doubao）供应商的模型预设枚举。

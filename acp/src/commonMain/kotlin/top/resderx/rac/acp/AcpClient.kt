@@ -48,7 +48,7 @@ interface AcpClient {
      * - 必须在其他方法之前调用
      *
      * @return Agent 的初始化响应（协议版本、能力、信息、认证方法）
-     * @throws com.resderx.rac.exceptions.RACException 握手失败或 Agent 返回错误
+     * @throws top.resderx.rac.exceptions.RACException 握手失败或 Agent 返回错误
      */
     suspend fun initialize(): InitializeResult
 
@@ -62,7 +62,7 @@ interface AcpClient {
      * @param mcpServers MCP 服务器配置列表，Agent 将连接这些服务器获取工具
      * @param additionalDirectories 额外可访问目录列表
      * @return 会话创建结果（含 sessionId）
-     * @throws com.resderx.rac.exceptions.RACException 创建失败
+     * @throws top.resderx.rac.exceptions.RACException 创建失败
      */
     suspend fun sessionNew(
         cwd: String,
@@ -83,7 +83,7 @@ interface AcpClient {
      * @param additionalDirectories 额外可访问目录列表
      * @param onUpdate 会话重放更新回调（接收历史消息块等）
      * @return 会话加载结果
-     * @throws com.resderx.rac.exceptions.RACException 加载失败或 Agent 不支持 loadSession
+     * @throws top.resderx.rac.exceptions.RACException 加载失败或 Agent 不支持 loadSession
      */
     suspend fun sessionLoad(
         sessionId: String,
@@ -107,7 +107,7 @@ interface AcpClient {
      * @param prompt 提示内容块列表（文本/图片/资源链接等）
      * @param onUpdate 会话更新回调，接收 Agent 推送的进度更新
      * @return 轮次停止原因（end_turn/max_tokens/refusal/cancelled 等）
-     * @throws com.resderx.rac.exceptions.RACException 请求失败或 Agent 返回错误
+     * @throws top.resderx.rac.exceptions.RACException 请求失败或 Agent 返回错误
      */
     suspend fun sessionPrompt(
         sessionId: String,

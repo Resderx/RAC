@@ -36,10 +36,10 @@ jobs:
         if: success()
         run: |
           echo "✅ Successfully published RAC modules to Maven Central"
-          echo "   - com.resderx.rac:core:${GITHUB_REF_NAME}"
-          echo "   - com.resderx.rac:mcp:${GITHUB_REF_NAME}"
-          echo "   - com.resderx.rac:acp:${GITHUB_REF_NAME}"
-          echo "   - com.resderx.rac:a2a:${GITHUB_REF_NAME}"
+          echo "   - top.resderx.rac:core:${GITHUB_REF_NAME}"
+          echo "   - top.resderx.rac:mcp:${GITHUB_REF_NAME}"
+          echo "   - top.resderx.rac:acp:${GITHUB_REF_NAME}"
+          echo "   - top.resderx.rac:a2a:${GITHUB_REF_NAME}"
         shell: bash
 
       # ── 发布失败通知 ───────────────────────────────────────────────────

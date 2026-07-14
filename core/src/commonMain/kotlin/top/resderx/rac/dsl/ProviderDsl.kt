@@ -14,7 +14,7 @@
 
 package top.resderx.rac.dsl
 
-import com.resderx.rac.providers.ProviderConfigBuilder
+import top.resderx.rac.providers.ProviderConfigBuilder
 
 /**
  * 通用供应商 DSL 作用域，聚合连接配置与模型注册，供所有供应商 DSL 扩展函数复用。

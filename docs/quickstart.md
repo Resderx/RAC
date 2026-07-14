@@ -41,12 +41,12 @@ kotlin {
 
 dependencies {
     commonMain {
-        implementation("com.resderx.rac:core:0.1.0-alpha01")
+        implementation("top.resderx.rac:core:0.1.0-alpha01")
     }
     // 按需引入协议模块
-    // commonMain { implementation("com.resderx.rac:mcp:0.1.0-alpha01") }
-    // commonMain { implementation("com.resderx.rac:acp:0.1.0-alpha01") }
-    // commonMain { implementation("com.resderx.rac:a2a:0.1.0-alpha01") }
+    // commonMain { implementation("top.resderx.rac:mcp:0.1.0-alpha01") }
+    // commonMain { implementation("top.resderx.rac:acp:0.1.0-alpha01") }
+    // commonMain { implementation("top.resderx.rac:a2a:0.1.0-alpha01") }
 }
 ```
 
@@ -62,7 +62,7 @@ repositories {
 
 ```kotlin
 dependencies {
-    implementation("com.resderx.rac:core:0.1.0-alpha01")
+    implementation("top.resderx.rac:core:0.1.0-alpha01")
 }
 ```
 
@@ -71,8 +71,8 @@ dependencies {
 创建 `Llm` 实例并发起一次非流式对话：
 
 ```kotlin
-import com.resderx.rac.dsl.llm
-import com.resderx.rac.dsl.deepseek
+import top.resderx.rac.dsl.llm
+import top.resderx.rac.dsl.deepseek
 import kotlinx.coroutines.runBlocking
 
 fun main() = runBlocking {
@@ -116,11 +116,11 @@ fun main() = runBlocking {
 RAC 为 10 家供应商提供了 43 个主流模型的预设枚举，一行代码即可注册带推荐配置的模型：
 
 ```kotlin
-import com.resderx.rac.dsl.llm
-import com.resderx.rac.dsl.deepseek
-import com.resderx.rac.dsl.openai
-import com.resderx.rac.providers.presets.DeepSeekModel
-import com.resderx.rac.providers.presets.OpenAIModel
+import top.resderx.rac.dsl.llm
+import top.resderx.rac.dsl.deepseek
+import top.resderx.rac.dsl.openai
+import top.resderx.rac.providers.presets.DeepSeekModel
+import top.resderx.rac.providers.presets.OpenAIModel
 
 val ai = llm {
     providers {
@@ -142,7 +142,7 @@ val ai = llm {
 }
 ```
 
-**可用的预设枚举**（均位于 `com.resderx.rac.providers.presets` 包）：
+**可用的预设枚举**（均位于 `top.resderx.rac.providers.presets` 包）：
 
 | 枚举类              | 供应商           | 模型数量 | 示例                                                |
 |------------------|---------------|------|---------------------------------------------------|
@@ -164,9 +164,9 @@ val ai = llm {
 流式调用返回 `Flow<StreamEvent>`，你可以实时处理模型输出的增量片段：
 
 ```kotlin
-import com.resderx.rac.dsl.llm
-import com.resderx.rac.dsl.deepseek
-import com.resderx.rac.messages.StreamEvent
+import top.resderx.rac.dsl.llm
+import top.resderx.rac.dsl.deepseek
+import top.resderx.rac.messages.StreamEvent
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.runBlocking
 
@@ -275,8 +275,8 @@ val agent = agent(ai) {
 ### 6.2 运行 Agent
 
 ```kotlin
-import com.resderx.rac.agent.Session
-import com.resderx.rac.agent.agent
+import top.resderx.rac.agent.Session
+import top.resderx.rac.agent.agent
 import kotlinx.coroutines.runBlocking
 
 fun main() = runBlocking {

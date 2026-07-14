@@ -130,7 +130,7 @@ class A2aProtocolTest {
 
         override suspend fun sendStreamingMessage(
             params: SendStreamingMessageParams,
-            context: com.resderx.rac.a2a.A2aAgentContext,
+            context: top.resderx.rac.a2a.A2aAgentContext,
         ): SendMessageResult {
             sendStreamingCalled = true
             lastPromptText = params.message.parts.filterIsInstance<TextPart>().joinToString("") { it.text }
@@ -141,7 +141,7 @@ class A2aProtocolTest {
                 status = TaskStatus(state = TaskState.WORKING),
             ))
             // 推送产出物
-            context.sendArtifactUpdate(com.resderx.rac.a2a.TaskArtifactUpdateEvent(
+            context.sendArtifactUpdate(top.resderx.rac.a2a.TaskArtifactUpdateEvent(
                 id = taskId,
                 artifact = Artifact(
                     artifactId = "msg-1",
@@ -180,9 +180,9 @@ class A2aProtocolTest {
             return ListTasksResult(tasks = emptyList())
         }
 
-        override suspend fun cancelTask(params: com.resderx.rac.a2a.CancelTaskParams): com.resderx.rac.a2a.CancelTaskResult {
+        override suspend fun cancelTask(params: top.resderx.rac.a2a.CancelTaskParams): top.resderx.rac.a2a.CancelTaskResult {
             cancelTaskCalled = true
-            return com.resderx.rac.a2a.CancelTaskResult(task = Task(
+            return top.resderx.rac.a2a.CancelTaskResult(task = Task(
                 id = params.id,
                 status = TaskStatus(state = TaskState.CANCELED),
             ))

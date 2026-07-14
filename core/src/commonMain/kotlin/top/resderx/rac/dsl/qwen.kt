@@ -14,7 +14,7 @@
 
 package top.resderx.rac.dsl
 
-import com.resderx.rac.providers.qwen.QwenProvider
+import top.resderx.rac.providers.qwen.QwenProvider
 
 /**
  * 在 `providers { }` 块中注册 Qwen（阿里 DashScope 兼容模式）供应商。

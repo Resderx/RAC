@@ -14,11 +14,11 @@
 
 package top.resderx.rac.agent
 
-import com.resderx.rac.messages.AIMessage
-import com.resderx.rac.messages.AssistantMessage
-import com.resderx.rac.messages.Message
-import com.resderx.rac.messages.ToolMessage
-import com.resderx.rac.messages.UserMessage
+import top.resderx.rac.messages.AIMessage
+import top.resderx.rac.messages.AssistantMessage
+import top.resderx.rac.messages.Message
+import top.resderx.rac.messages.ToolMessage
+import top.resderx.rac.messages.UserMessage
 
 /**
  * 对话历史容器——仅存储消息列表，不存储 system 提示词、工具定义或任何其他状态。
@@ -125,7 +125,7 @@ class Session {
      * - 作用：记录工具执行结果，供模型在下一轮推理时引用
      * - 必要性：工具调用闭环的必要环节；[Agent.run] 的多轮循环中自动追加
      *
-     * @param toolCallId 对应的 [com.resderx.rac.messages.ToolCall.id]
+     * @param toolCallId 对应的 [top.resderx.rac.messages.ToolCall.id]
      * @param content 工具执行结果文本（通常为 JSON 字符串）
      */
     fun addToolResult(toolCallId: String, content: String) {

@@ -14,9 +14,9 @@
 
 package top.resderx.rac.acp
 
-import com.resderx.rac.dsl.Llm
-import com.resderx.rac.messages.AIMessage
-import com.resderx.rac.messages.FinishReason
+import top.resderx.rac.dsl.Llm
+import top.resderx.rac.messages.AIMessage
+import top.resderx.rac.messages.FinishReason
 
 /**
  * 以 ACP Client 身份调用远程 ACP Agent，执行一轮对话（Llm 扩展函数）。
@@ -33,7 +33,7 @@ import com.resderx.rac.messages.FinishReason
  *   3. 调用 [AcpClient.sessionPrompt] 发送提示，在 [onUpdate] 回调中累积 [AgentMessageChunk] 的文本
  *   4. 将 ACP [StopReason] 映射为 RAC [FinishReason]，构造统一 [AIMessage] 返回
  * - 实现方式：suspend 扩展函数，委托 [AcpClient] 的生命周期方法，内部 StringBuilder 累积响应文本
- * - 可能的问题：[AcpClient] 生命周期由调用方管理，本方法不关闭 client；远程 Agent 抛错时向上传播为 [com.resderx.rac.exceptions.RACException]
+ * - 可能的问题：[AcpClient] 生命周期由调用方管理，本方法不关闭 client；远程 Agent 抛错时向上传播为 [top.resderx.rac.exceptions.RACException]
  * - 边缘情况：prompt 为空字符串时仍发送（由 Agent 决定如何处理）；Agent 未推送任何 AgentMessageChunk 时
  *   返回的 AIMessage.content 为空字符串；Agent 推送的非文本内容块（image/audio/resource）被忽略
  * - 优点：调用方无需关心 ACP session 管理与 JSON-RPC 细节；与 Llm.chat/Llm.chatWithTools 返回类型一致
@@ -47,7 +47,7 @@ import com.resderx.rac.messages.FinishReason
  * @param cwd 工作目录，传递给 Agent 作为执行上下文，默认空字符串
  * @param onUpdate 会话更新回调，接收 Agent 推送的流式更新（计划/消息块/工具调用/用量）；默认空回调
  * @return 统一的 AIMessage（content 为累积的 Agent 响应文本，finishReason 由 StopReason 映射）
- * @throws com.resderx.rac.exceptions.RACException 当 ACP 握手/会话创建/提示失败时向上传播
+ * @throws top.resderx.rac.exceptions.RACException 当 ACP 握手/会话创建/提示失败时向上传播
  */
 suspend fun Llm.chatWithAcpAgent(
     client: AcpClient,

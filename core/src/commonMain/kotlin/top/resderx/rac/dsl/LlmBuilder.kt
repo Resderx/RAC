@@ -14,15 +14,15 @@
 
 package top.resderx.rac.dsl
 
-import com.resderx.rac.exceptions.RACException
-import com.resderx.rac.network.HttpClientFactory
-import com.resderx.rac.network.RetryPolicy
-import com.resderx.rac.providers.ModelConfig
-import com.resderx.rac.providers.ModelProvider
-import com.resderx.rac.providers.ProviderConfig
-import com.resderx.rac.providers.ProviderConfigBuilder
-import com.resderx.rac.providers.ProviderRegistry
-import com.resderx.rac.providers.presets.ModelPreset
+import top.resderx.rac.exceptions.RACException
+import top.resderx.rac.network.HttpClientFactory
+import top.resderx.rac.network.RetryPolicy
+import top.resderx.rac.providers.ModelConfig
+import top.resderx.rac.providers.ModelProvider
+import top.resderx.rac.providers.ProviderConfig
+import top.resderx.rac.providers.ProviderConfigBuilder
+import top.resderx.rac.providers.ProviderRegistry
+import top.resderx.rac.providers.presets.ModelPreset
 
 /**
  * LLM 顶层实例的 DSL 构建器，以声明式风格注册供应商并配置全局参数。
@@ -273,7 +273,7 @@ class ModelsBuilder internal constructor() {
      * }
      * ```
      *
-     * @param preset 模型预设枚举（如 [com.resderx.rac.providers.presets.DeepSeekModel.V4_FLASH]）
+     * @param preset 模型预设枚举（如 [top.resderx.rac.providers.presets.DeepSeekModel.V4_FLASH]）
      * @param block 在 [ModelBuilder] 作用域内覆盖预设参数，默认空块表示完全使用预设
      */
     fun model(preset: ModelPreset, block: ModelBuilder.() -> Unit = {}) {

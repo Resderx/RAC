@@ -14,7 +14,7 @@
 
 package top.resderx.rac.dsl
 
-import com.resderx.rac.messages.ToolDefinition
+import top.resderx.rac.messages.ToolDefinition
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
@@ -124,7 +124,7 @@ class ToolBuilder {
      * 将收集的参数定义序列化为合法 JSON Schema 字符串。
      *
      * - 作用：把结构化的参数定义转为 `{"type":"object","properties":{...},"required":[...]}` 字符串，
-     *   供 [ToolDefinition.parameters] 使用，最终由 [com.resderx.rac.api.completions.toCompletionsTool]
+     *   供 [ToolDefinition.parameters] 使用，最终由 [top.resderx.rac.api.completions.toCompletionsTool]
      *   解析为 JsonElement 嵌入请求体
      * - 实现方式：用 kotlinx.serialization 的 buildJsonObject 构建 JsonObject，再 encodeToString
      * - 边缘情况：无参数时返回 `{"type":"object"}`；无必填参数时不输出 "required" 字段

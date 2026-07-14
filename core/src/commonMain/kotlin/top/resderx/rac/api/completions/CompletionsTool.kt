@@ -14,7 +14,7 @@
 
 package top.resderx.rac.api.completions
 
-import com.resderx.rac.messages.ToolDefinition
+import top.resderx.rac.messages.ToolDefinition
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
@@ -63,7 +63,7 @@ data class CompletionsFunction(
 /**
  * 将 RAC 内部的 [ToolDefinition] 转换为 Completions API 期望的 [CompletionsTool] 包装类型。
  *
- * - 作用：在 [com.resderx.rac.dsl.ChatRequestBuilder.build] 时将用户声明的工具定义转换为
+ * - 作用：在 [top.resderx.rac.dsl.ChatRequestBuilder.build] 时将用户声明的工具定义转换为
  *   OpenAI/DeepSeek 等 Completions 协议供应商要求的 `{"type":"function","function":{...}}` 结构
  * - 必要性：[ToolDefinition.parameters] 为 JSON Schema 字符串，需解析为 [JsonElement] 以对象形式嵌入请求体；
  *   同时需添加外层 `type`/`function` 包装以满足 API 反序列化要求

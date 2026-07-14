@@ -14,22 +14,22 @@
 
 package top.resderx.rac.dsl
 
-import com.resderx.rac.api.anthropic.AnthropicClient
-import com.resderx.rac.api.completions.CompletionsClient
-import com.resderx.rac.api.responses.ResponsesClient
-import com.resderx.rac.exceptions.RACException
-import com.resderx.rac.messages.AIMessage
-import com.resderx.rac.messages.StreamEvent
-import com.resderx.rac.messages.ToolCall
-import com.resderx.rac.messages.toAnthropicStreamEvents
-import com.resderx.rac.messages.toCompletionsStreamEvents
-import com.resderx.rac.messages.toResponsesStreamEvents
-import com.resderx.rac.network.RequestExecutor
-import com.resderx.rac.network.RetryExecutor
-import com.resderx.rac.network.RetryPolicy
-import com.resderx.rac.providers.ApiType
-import com.resderx.rac.providers.ModelProvider
-import com.resderx.rac.providers.ProviderRegistry
+import top.resderx.rac.api.anthropic.AnthropicClient
+import top.resderx.rac.api.completions.CompletionsClient
+import top.resderx.rac.api.responses.ResponsesClient
+import top.resderx.rac.exceptions.RACException
+import top.resderx.rac.messages.AIMessage
+import top.resderx.rac.messages.StreamEvent
+import top.resderx.rac.messages.ToolCall
+import top.resderx.rac.messages.toAnthropicStreamEvents
+import top.resderx.rac.messages.toCompletionsStreamEvents
+import top.resderx.rac.messages.toResponsesStreamEvents
+import top.resderx.rac.network.RequestExecutor
+import top.resderx.rac.network.RetryExecutor
+import top.resderx.rac.network.RetryPolicy
+import top.resderx.rac.providers.ApiType
+import top.resderx.rac.providers.ModelProvider
+import top.resderx.rac.providers.ProviderRegistry
 import io.ktor.client.HttpClient
 import kotlinx.coroutines.flow.Flow
 
@@ -76,7 +76,7 @@ class Llm(
      *
      * @param name 供应商名称
      * @return 对应的 [ModelProvider]
-     * @throws com.resderx.rac.exceptions.RACException 当 name 未注册时
+     * @throws top.resderx.rac.exceptions.RACException 当 name 未注册时
      */
     fun provider(name: String): ModelProvider = registry.get(name)
 
@@ -110,7 +110,7 @@ class Llm(
      * 使用已构建好的 [ChatRequestBuilder] 执行一次非流式 Chat 调用。
      *
      * - 作用：将 [chat] 的核心逻辑提取为可复用的方法，供 [chatWithTools] 多轮循环与 [Agent] 自行控制循环复用
-     * - 可见性：`internal`——同模块内（如 [com.resderx.rac.agent.Agent]）可访问，支持 Agent 自行管理多轮循环
+     * - 可见性：`internal`——同模块内（如 [top.resderx.rac.agent.Agent]）可访问，支持 Agent 自行管理多轮循环
      *   并在每轮把中间消息同步到 Session；外部模块不可直接调用
      * - 按 [resolveProvider] 解析最终使用的 provider，按 [ModelProvider.defaultApiType] 路由
      *
@@ -143,7 +143,7 @@ class Llm(
      * 使用已构建好的 [ChatRequestBuilder] 执行一次流式 Chat 调用——返回统一语义化事件流。
      *
      * - 作用：将 [chatStream] / [anthropicStream] 的核心逻辑提取为可复用的方法，
-     *   供 [com.resderx.rac.agent.Agent.runStream] 在多轮循环中复用——每轮调用本方法获取该轮的流式事件
+     *   供 [top.resderx.rac.agent.Agent.runStream] 在多轮循环中复用——每轮调用本方法获取该轮的流式事件
      * - 可见性：`internal`——同模块内（Agent）可访问，支持 Agent 自行管理多轮流式循环；
      *   外部模块不可直接调用
      * - 设计：按 [resolveProvider] 解析 provider，按 [ModelProvider.defaultApiType] 路由到

@@ -14,9 +14,9 @@
 
 package top.resderx.rac.mcp
 
-import com.resderx.rac.dsl.ChatRequestBuilder
-import com.resderx.rac.dsl.Llm
-import com.resderx.rac.messages.AIMessage
+import top.resderx.rac.dsl.ChatRequestBuilder
+import top.resderx.rac.dsl.Llm
+import top.resderx.rac.messages.AIMessage
 
 /**
  * 带 MCP 工具自动注册与多轮调用的非流式 Chat 调用（Llm 扩展函数）。
@@ -48,7 +48,7 @@ import com.resderx.rac.messages.AIMessage
  * @param maxRounds 最大工具调用循环轮数，默认 10；透传给 [Llm.chatWithTools]
  * @param block 在 ChatRequestBuilder 作用域内构建初始消息与可选的本地工具定义
  * @return 最终的 AIMessage（无工具调用或达到 maxRounds 上限）
- * @throws com.resderx.rac.exceptions.RACException 当 MCP 工具发现/调用失败或模型调用失败时向上传播
+ * @throws top.resderx.rac.exceptions.RACException 当 MCP 工具发现/调用失败或模型调用失败时向上传播
  */
 suspend fun Llm.chatWithMcp(
     mcpClient: McpClient,

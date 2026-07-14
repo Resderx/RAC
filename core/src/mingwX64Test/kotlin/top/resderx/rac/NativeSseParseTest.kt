@@ -14,7 +14,7 @@
 
 package top.resderx.rac
 
-import com.resderx.rac.api.completions.CompletionsStreamChunk
+import top.resderx.rac.api.completions.CompletionsStreamChunk
 import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import kotlin.test.assertEquals

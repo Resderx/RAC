@@ -14,7 +14,7 @@
 
 package top.resderx.rac.mcp
 
-import com.resderx.rac.messages.ToolDefinition
+import top.resderx.rac.messages.ToolDefinition
 
 /**
  * MCP 客户端接口，定义与 MCP 服务器交互的统一契约。
@@ -49,7 +49,7 @@ interface McpClient {
      *   将 MCP 工具的 inputSchema（JSON Schema）转为 ToolDefinition.parameters 字符串
      *
      * @return 工具定义列表；服务器无工具时返回空列表
-     * @throws com.resderx.rac.exceptions.RACException 服务器返回错误或连接失败
+     * @throws top.resderx.rac.exceptions.RACException 服务器返回错误或连接失败
      */
     suspend fun listTools(): List<ToolDefinition>
 
@@ -63,7 +63,7 @@ interface McpClient {
      * @param name 工具名称（需与 listTools 返回的 ToolDefinition.name 一致）
      * @param arguments 工具参数，JSON 字符串（如 `'{"query":"kotlin"}'`）
      * @return 工具执行结果字符串（通常为 JSON 或纯文本）
-     * @throws com.resderx.rac.exceptions.RACException 工具不存在、参数无效或执行失败
+     * @throws top.resderx.rac.exceptions.RACException 工具不存在、参数无效或执行失败
      */
     suspend fun callTool(name: String, arguments: String): String
 
@@ -74,7 +74,7 @@ interface McpClient {
      * - 实现：发送 JSON-RPC `resources/list` 请求，解析响应中的资源列表
      *
      * @return 资源列表；服务器无资源时返回空列表
-     * @throws com.resderx.rac.exceptions.RACException 服务器返回错误或连接失败
+     * @throws top.resderx.rac.exceptions.RACException 服务器返回错误或连接失败
      */
     suspend fun listResources(): List<McpResource>
 
@@ -87,7 +87,7 @@ interface McpClient {
      *
      * @param uri 资源 URI（需与 listResources 返回的 McpResource.uri 一致）
      * @return 资源文本内容
-     * @throws com.resderx.rac.exceptions.RACException 资源不存在或读取失败
+     * @throws top.resderx.rac.exceptions.RACException 资源不存在或读取失败
      */
     suspend fun readResource(uri: String): String
 

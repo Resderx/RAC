@@ -138,7 +138,7 @@ private fun buildPropertySchema(descriptor: SerialDescriptor): JsonElement = whe
 /**
  * 将 `@Serializable` data class 的 [KSerializer] 转换为 JSON Schema 字符串。
  *
- * - 作用：Agent 工具注册时调用，自动生成 [com.resderx.rac.messages.ToolDefinition.parameters]
+ * - 作用：Agent 工具注册时调用，自动生成 [top.resderx.rac.messages.ToolDefinition.parameters]
  * - 用法：`serializer<WeatherArgs>().toJsonSchema()` 得到 `{"type":"object","properties":{...}}`
  *
  * @return JSON Schema 字符串

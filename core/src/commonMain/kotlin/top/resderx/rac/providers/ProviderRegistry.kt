@@ -14,7 +14,7 @@
 
 package top.resderx.rac.providers
 
-import com.resderx.rac.exceptions.RACException
+import top.resderx.rac.exceptions.RACException
 
 /**
  * 供应商注册表，按 name 管理所有已注册的 ModelProvider 实例。

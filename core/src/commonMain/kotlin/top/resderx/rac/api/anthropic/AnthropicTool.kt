@@ -14,7 +14,7 @@
 
 package top.resderx.rac.api.anthropic
 
-import com.resderx.rac.messages.ToolDefinition
+import top.resderx.rac.messages.ToolDefinition
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -29,7 +29,7 @@ import kotlinx.serialization.json.buildJsonObject
  *   与 OpenAI Completions 不同，Anthropic 不使用 `type`/`function` 包装，而是扁平的
  *   `{name, description, input_schema}` 结构，且参数 schema 字段名为 `input_schema` 而非 `parameters`
  * - 必要性：Anthropic API 反序列化器要求 `input_schema` 字段（非 `parameters`），且无 `type`/`function` 包装；
- *   直接复用 [ToolDefinition] 或 [com.resderx.rac.api.completions.CompletionsTool] 均不兼容
+ *   直接复用 [ToolDefinition] 或 [top.resderx.rac.api.completions.CompletionsTool] 均不兼容
  * - 设计思路：单层 data class，三个字段——name/description/input_schema；input_schema 类型为 [JsonElement]
  *   以对象形式序列化（同 CompletionsTool 的 parameters 处理方式）
  * - 实现方式：`@Serializable` data class；通过 [ToolDefinition.toAnthropicTool] 扩展函数构造，
@@ -50,7 +50,7 @@ data class AnthropicTool(
 /**
  * 将 RAC 内部的 [ToolDefinition] 转换为 Anthropic API 期望的 [AnthropicTool] 类型。
  *
- * - 作用：在 [com.resderx.rac.dsl.ChatRequestBuilder.buildAnthropic] 时将用户声明的工具定义
+ * - 作用：在 [top.resderx.rac.dsl.ChatRequestBuilder.buildAnthropic] 时将用户声明的工具定义
  *   转换为 Anthropic 协议要求的 `{name, description, input_schema}` 结构
  * - 必要性：Anthropic 用 `input_schema` 而非 `parameters`，且无 `type`/`function` 包装
  * - 实现方式：解析 parameters 字符串为 [JsonElement]；失败时回退为空 [JsonObject]

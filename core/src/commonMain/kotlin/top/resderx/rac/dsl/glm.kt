@@ -14,7 +14,7 @@
 
 package top.resderx.rac.dsl
 
-import com.resderx.rac.providers.glm.GlmProvider
+import top.resderx.rac.providers.glm.GlmProvider
 
 /**
  * 在 `providers { }` 块中注册 GLM（智谱 AI）供应商。

@@ -14,38 +14,38 @@
 
 package top.resderx.rac
 
-import com.resderx.rac.acp.AcpAgentContext
-import com.resderx.rac.acp.AcpAgentHandler
-import com.resderx.rac.acp.AcpAgentServer
-import com.resderx.rac.acp.AcpClientConfig
-import com.resderx.rac.acp.AcpConnection
-import com.resderx.rac.acp.AcpHttpTransport
-import com.resderx.rac.acp.AcpTextBlock
-import com.resderx.rac.acp.AgentCapabilities
-import com.resderx.rac.acp.AgentMessageChunk
-import com.resderx.rac.acp.DefaultAcpClient
-import com.resderx.rac.acp.InitializeParams
-import com.resderx.rac.acp.InitializeResult
-import com.resderx.rac.acp.ImplementationInfo
-import com.resderx.rac.acp.PermissionOutcome
-import com.resderx.rac.acp.PermissionOutcomeValue
-import com.resderx.rac.acp.LlmAcpAgent
-import com.resderx.rac.acp.SessionLoadParams
-import com.resderx.rac.acp.SessionLoadResult
-import com.resderx.rac.acp.SessionNewParams
-import com.resderx.rac.acp.SessionNewResult
-import com.resderx.rac.acp.SessionPromptParams
-import com.resderx.rac.acp.SessionPromptResult
-import com.resderx.rac.acp.SessionUpdate
-import com.resderx.rac.acp.StopReason
-import com.resderx.rac.acp.chatWithAcpAgent
-import com.resderx.rac.acp.serveAsAcpAgent
-import com.resderx.rac.dsl.Llm
-import com.resderx.rac.messages.FinishReason
-import com.resderx.rac.providers.ApiType
-import com.resderx.rac.providers.ModelConfig
-import com.resderx.rac.providers.ProviderRegistry
-import com.resderx.rac.providers.SimpleModelProvider
+import top.resderx.rac.acp.AcpAgentContext
+import top.resderx.rac.acp.AcpAgentHandler
+import top.resderx.rac.acp.AcpAgentServer
+import top.resderx.rac.acp.AcpClientConfig
+import top.resderx.rac.acp.AcpConnection
+import top.resderx.rac.acp.AcpHttpTransport
+import top.resderx.rac.acp.AcpTextBlock
+import top.resderx.rac.acp.AgentCapabilities
+import top.resderx.rac.acp.AgentMessageChunk
+import top.resderx.rac.acp.DefaultAcpClient
+import top.resderx.rac.acp.InitializeParams
+import top.resderx.rac.acp.InitializeResult
+import top.resderx.rac.acp.ImplementationInfo
+import top.resderx.rac.acp.PermissionOutcome
+import top.resderx.rac.acp.PermissionOutcomeValue
+import top.resderx.rac.acp.LlmAcpAgent
+import top.resderx.rac.acp.SessionLoadParams
+import top.resderx.rac.acp.SessionLoadResult
+import top.resderx.rac.acp.SessionNewParams
+import top.resderx.rac.acp.SessionNewResult
+import top.resderx.rac.acp.SessionPromptParams
+import top.resderx.rac.acp.SessionPromptResult
+import top.resderx.rac.acp.SessionUpdate
+import top.resderx.rac.acp.StopReason
+import top.resderx.rac.acp.chatWithAcpAgent
+import top.resderx.rac.acp.serveAsAcpAgent
+import top.resderx.rac.dsl.Llm
+import top.resderx.rac.messages.FinishReason
+import top.resderx.rac.providers.ApiType
+import top.resderx.rac.providers.ModelConfig
+import top.resderx.rac.providers.ProviderRegistry
+import top.resderx.rac.providers.SimpleModelProvider
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.respond
 import io.ktor.client.plugins.HttpTimeout
@@ -223,7 +223,7 @@ class AcpProtocolTest {
      */
     private fun createTestClient(
         connection: FakeAcpConnection,
-        permissionHandler: suspend (com.resderx.rac.acp.PermissionRequest) -> PermissionOutcome = {
+        permissionHandler: suspend (top.resderx.rac.acp.PermissionRequest) -> PermissionOutcome = {
             PermissionOutcome(selected = PermissionOutcomeValue.ALLOW)
         },
     ): TestAcpClient {
@@ -615,7 +615,7 @@ class AcpProtocolTest {
             override suspend fun sendUpdate(update: SessionUpdate) {
                 updates.add(update)
             }
-            override suspend fun requestPermission(permission: com.resderx.rac.acp.PermissionRequest): PermissionOutcome {
+            override suspend fun requestPermission(permission: top.resderx.rac.acp.PermissionRequest): PermissionOutcome {
                 return PermissionOutcome(selected = PermissionOutcomeValue.ALLOW)
             }
         }

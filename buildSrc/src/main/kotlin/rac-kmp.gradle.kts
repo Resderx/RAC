@@ -94,7 +94,7 @@ kotlin {
     watchosSimulatorArm64()
 
     androidLibrary {
-        namespace = "com.resderx.rac"
+        namespace = "top.resderx.rac"
         compileSdk = 36
         minSdk = 24
         compilerOptions {

@@ -101,7 +101,7 @@ data class McpToolListResult(
 /**
  * MCP 工具信息（服务器端格式）。
  *
- * - 作用：映射 MCP 服务器返回的工具定义，后续转换为 RAC 的 [com.resderx.rac.messages.ToolDefinition]
+ * - 作用：映射 MCP 服务器返回的工具定义，后续转换为 RAC 的 [top.resderx.rac.messages.ToolDefinition]
  * - 边缘：description 可为 null；inputSchema 为 JSON Schema 对象
  *
  * @property name 工具名称

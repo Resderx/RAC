@@ -24,7 +24,7 @@ import kotlinx.serialization.json.JsonClassDiscriminator
  * ACP v1 内容块模型，用于 `session/prompt` 的 prompt 字段与 `session/update` 的消息块。
  *
  * - 作用：定义 ACP 协议中用户提示与 Agent 消息的内容载体，支持文本/资源/图片/音频/资源链接五种类型
- * - 必要性：ACP v1 规范定义了与 MCP 兼容的 ContentBlock 结构，RAC 现有的 [com.resderx.rac.messages.Content]
+ * - 必要性：ACP v1 规范定义了与 MCP 兼容的 ContentBlock 结构，RAC 现有的 [top.resderx.rac.messages.Content]
  *   仅覆盖 text/image/audio，缺少 resource 与 resource_link，故独立建模 ACP 内容块
  * - 设计思路：密封接口 + `@JsonClassDiscriminator("type")` 多态序列化，子类型用 `@SerialName` 标记；
  *   基线 Agent MUST 支持 [AcpTextBlock] 与 [AcpResourceLinkBlock]

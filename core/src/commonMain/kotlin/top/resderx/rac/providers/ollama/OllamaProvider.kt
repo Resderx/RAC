@@ -14,11 +14,11 @@
 
 package top.resderx.rac.providers.ollama
 
-import com.resderx.rac.providers.ApiType
-import com.resderx.rac.providers.ModelConfig
-import com.resderx.rac.providers.ModelProvider
-import com.resderx.rac.providers.ProviderConfig
-import com.resderx.rac.providers.SimpleModelProvider
+import top.resderx.rac.providers.ApiType
+import top.resderx.rac.providers.ModelConfig
+import top.resderx.rac.providers.ModelProvider
+import top.resderx.rac.providers.ProviderConfig
+import top.resderx.rac.providers.SimpleModelProvider
 
 /**
  * Ollama 供应商工厂函数，构造一个 [ModelProvider] 用于连接本地或云端 Ollama 实例。

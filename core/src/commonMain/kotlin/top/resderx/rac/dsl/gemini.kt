@@ -14,7 +14,7 @@
 
 package top.resderx.rac.dsl
 
-import com.resderx.rac.providers.gemini.GeminiProvider
+import top.resderx.rac.providers.gemini.GeminiProvider
 
 /**
  * 在 `providers { }` 块中注册 Gemini 供应商。

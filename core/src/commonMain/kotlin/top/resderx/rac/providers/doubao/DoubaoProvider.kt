@@ -14,11 +14,11 @@
 
 package top.resderx.rac.providers.doubao
 
-import com.resderx.rac.providers.ApiType
-import com.resderx.rac.providers.ModelConfig
-import com.resderx.rac.providers.ModelProvider
-import com.resderx.rac.providers.ProviderConfig
-import com.resderx.rac.providers.SimpleModelProvider
+import top.resderx.rac.providers.ApiType
+import top.resderx.rac.providers.ModelConfig
+import top.resderx.rac.providers.ModelProvider
+import top.resderx.rac.providers.ProviderConfig
+import top.resderx.rac.providers.SimpleModelProvider
 
 /**
  * Doubao Seed（火山引擎方舟）供应商工厂函数。

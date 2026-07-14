@@ -14,8 +14,8 @@
 
 package top.resderx.rac.network
 
-import com.resderx.rac.exceptions.RACApiException
-import com.resderx.rac.exceptions.RACTimeoutException
+import top.resderx.rac.exceptions.RACApiException
+import top.resderx.rac.exceptions.RACTimeoutException
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.ClientRequestException
 import io.ktor.client.plugins.HttpRequestTimeoutException

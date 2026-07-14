@@ -14,11 +14,11 @@
 
 package top.resderx.rac.providers.openai
 
-import com.resderx.rac.providers.ApiType
-import com.resderx.rac.providers.ModelConfig
-import com.resderx.rac.providers.ModelProvider
-import com.resderx.rac.providers.ProviderConfig
-import com.resderx.rac.providers.SimpleModelProvider
+import top.resderx.rac.providers.ApiType
+import top.resderx.rac.providers.ModelConfig
+import top.resderx.rac.providers.ModelProvider
+import top.resderx.rac.providers.ProviderConfig
+import top.resderx.rac.providers.SimpleModelProvider
 
 /**
  * 工厂函数：创建 OpenAI 供应商的 ModelProvider 实例。
@@ -29,7 +29,7 @@ import com.resderx.rac.providers.SimpleModelProvider
  *   避免调用方手动拼装 SimpleModelProvider 参数
  * - 设计思路：连接配置与模型配置分离——所有连接默认值在此处集中声明（baseUrl/apiType），
  *   config 中对应字段的非 null 值覆盖默认；apiKey 透传（可空以支持 Mock 测试），
- *   Bearer 鉴权头由 [com.resderx.rac.dsl.RAC.buildHeaders] 统一注入，供应商本身不硬编码 Authorization 头；
+ *   Bearer 鉴权头由 [top.resderx.rac.dsl.RAC.buildHeaders] 统一注入，供应商本身不硬编码 Authorization 头；
  *   models 为模型名→配置的 Map，为空时自动注册默认模型 "gpt-4o-mini"（空 ModelConfig）
  * - 实现方式：纯函数，返回 [SimpleModelProvider] data class 实例；name 固定为 "openai" 用作注册键
  * - 边缘情况：config.apiKey 为 null 时供应商的 apiKey 字段为 null，buildHeaders 不会添加 Authorization，

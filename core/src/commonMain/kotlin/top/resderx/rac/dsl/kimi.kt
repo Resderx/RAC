@@ -14,7 +14,7 @@
 
 package top.resderx.rac.dsl
 
-import com.resderx.rac.providers.kimi.KimiProvider
+import top.resderx.rac.providers.kimi.KimiProvider
 
 /**
  * 在 `providers { }` 块中注册 Kimi（Moonshot AI）供应商。

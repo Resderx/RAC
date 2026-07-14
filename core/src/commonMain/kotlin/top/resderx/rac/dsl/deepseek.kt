@@ -14,7 +14,7 @@
 
 package top.resderx.rac.dsl
 
-import com.resderx.rac.providers.deepseek.DeepSeekProvider
+import top.resderx.rac.providers.deepseek.DeepSeekProvider
 
 /**
  * 在 `providers { }` 块中注册 DeepSeek 供应商。

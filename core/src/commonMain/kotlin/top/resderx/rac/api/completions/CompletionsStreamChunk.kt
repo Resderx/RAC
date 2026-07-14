@@ -14,7 +14,7 @@
 
 package top.resderx.rac.api.completions
 
-import com.resderx.rac.messages.Usage
+import top.resderx.rac.messages.Usage
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 

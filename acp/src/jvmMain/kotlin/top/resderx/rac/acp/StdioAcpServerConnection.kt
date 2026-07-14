@@ -116,7 +116,7 @@ private class JvmAcpStdioServerConnection : AcpConnection {
      */
     override suspend fun send(message: String) {
         val writer = stdout
-            ?: throw com.resderx.rac.exceptions.RACException("ACP server stdio connection not connected")
+            ?: throw top.resderx.rac.exceptions.RACException("ACP server stdio connection not connected")
         writeMutex.withLock {
             writer.write(message)
             writer.write("\n")

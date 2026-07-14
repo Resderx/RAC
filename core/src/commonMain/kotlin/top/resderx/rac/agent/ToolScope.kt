@@ -16,8 +16,8 @@
 
 package top.resderx.rac.agent
 
-import com.resderx.rac.dsl.RacDslMarker
-import com.resderx.rac.messages.ToolDefinition
+import top.resderx.rac.dsl.RacDslMarker
+import top.resderx.rac.messages.ToolDefinition
 import kotlinx.serialization.serializer
 
 /**

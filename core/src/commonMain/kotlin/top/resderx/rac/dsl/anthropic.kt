@@ -14,7 +14,7 @@
 
 package top.resderx.rac.dsl
 
-import com.resderx.rac.providers.anthropic.AnthropicProvider
+import top.resderx.rac.providers.anthropic.AnthropicProvider
 
 /**
  * 在 `providers { }` 块中注册 Anthropic 供应商。

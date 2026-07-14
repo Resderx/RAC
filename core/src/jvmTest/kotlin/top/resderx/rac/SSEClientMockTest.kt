@@ -27,8 +27,8 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
-import com.resderx.rac.exceptions.RACApiException
-import com.resderx.rac.network.SSEClient
+import top.resderx.rac.exceptions.RACApiException
+import top.resderx.rac.network.SSEClient
 
 /**
  * SSEClient 的 JVM MockEngine 测试，替代原 SSETest.kt 占位。
