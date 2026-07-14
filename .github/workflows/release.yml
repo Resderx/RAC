@@ -1,106 +1,43 @@
-# release.yml — RAC 项目发布到 Maven Central 的工作流
-#
-# - 作用：在创建 release（git tag v*）时，将 4 个模块（core/mcp/acp/a2a）的构建产物
-#   签名并发布到 Maven Central（Central Portal）
-# - 触发：推送 v* 格式的 tag（如 v0.3.0-alpha）
-# - 流程：
-#   1. 在 Ubuntu 上构建所有模块（JVM 编译验证）
-#   2. 使用 GPG 私钥对产物签名
-#   3. 上传到 Maven Central 的 staging 仓库
-#   4. 自动发布（release bundle）
-# - 凭证：通过 GitHub Secrets 注入 Maven Central 令牌与 GPG 密钥
-# - 前置条件：
-#   - 已在 GitHub repo settings → Secrets 配置以下密钥
-#   - MAVEN_CENTRAL_USERNAME / MAVEN_CENTRAL_PASSWORD：Central Portal 令牌
-#   - SIGNING_IN_MEMORY_KEY：GPG 私钥（ASCII armored，含 BEGIN/END PGP PRIVATE KEY BLOCK）
-#   - SIGNING_IN_MEMORY_KEY_ID：GPG 密钥 ID（8 位短 ID，如 ABCD1234）
-#   - SIGNING_IN_MEMORY_KEY_PASSWORD：GPG 密钥密码
-
-name: Release to Maven Central
+name: Publish to Maven Central
 
 on:
-  push:
-    tags:
-      - 'v*'  # 仅 v 开头的 tag 触发（如 v0.3.0-alpha、v1.0.0）
-  workflow_dispatch:  # 允许手动触发（用于测试发布流程）
-
-# 发布任务互斥，避免同一版本并发发布
-concurrency:
-  group: release-${{ github.ref }}
-  cancel-in-progress: false  # 发布任务不可取消，避免产物损坏
+#  push:
+#    tags:
+#      - 'v*'
+  workflow_dispatch:
 
 jobs:
-  # ──────────────────────────────────────────────────────────────────────────
-  # 发布：构建 + 签名 + 上传到 Maven Central
-  # ──────────────────────────────────────────────────────────────────────────
   publish:
-    name: Publish to Maven Central
     runs-on: ubuntu-latest
-    # 仅在 tag 推送或手动触发时运行；PR 不触发发布
-    if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
+    permissions:
+      contents: read
 
     steps:
-      # ── 1. 检出代码（完整历史，用于生成 POM scm 标签） ────────────────────
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      # ── 2. 配置 JDK ──────────────────────────────────────────────────────
-      - name: Setup JDK 25
+      - name: Run JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '25'
+          java-version: '17'
 
-      # ── 3. 配置 Gradle ────────────────────────────────────────────────────
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v3
 
-      # ── 4. 缓存 Konan（Kotlin/Native 工具链） ─────────────────────────────
-      - name: Cache Konan
-        uses: actions/cache@v4
-        with:
-          path: ~/.konan
-          key: konan-publish-${{ hashFiles('**/*.gradle.kts', 'gradle/libs.versions.toml') }}
-          restore-keys: |
-            konan-publish-
-
-      # ── 5. 注入 Maven Central 凭证与 GPG 签名密钥 ─────────────────────────
-      # vanniktech.maven.publish 插件通过 gradle.properties / 环境变量读取凭证
-      # 此处将 GitHub Secrets 写入 ~/.gradle/gradle.properties，供 Gradle 进程读取
-      - name: Configure publishing credentials
+      - name: Publish to Maven Central
+        run: ./gradlew publishAndReleaseToMavenCentral
         env:
-          MAVEN_CENTRAL_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
-          MAVEN_CENTRAL_PASSWORD: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
-          SIGNING_IN_MEMORY_KEY: ${{ secrets.SIGNING_IN_MEMORY_KEY }}
-          SIGNING_IN_MEMORY_KEY_ID: ${{ secrets.SIGNING_IN_MEMORY_KEY_ID }}
-          SIGNING_IN_MEMORY_KEY_PASSWORD: ${{ secrets.SIGNING_IN_MEMORY_KEY_PASSWORD }}
-        run: |
-          mkdir -p ~/.gradle
-          cat <<EOF > ~/.gradle/gradle.properties
-          mavenCentralUsername=${MAVEN_CENTRAL_USERNAME}
-          mavenCentralPassword=${MAVEN_CENTRAL_PASSWORD}
-          signingInMemoryKey=${SIGNING_IN_MEMORY_KEY}
-          signingInMemoryKeyId=${SIGNING_IN_MEMORY_KEY_ID}
-          signingInMemoryKeyPassword=${SIGNING_IN_MEMORY_KEY_PASSWORD}
-          EOF
-        shell: bash
+          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.GPG_SIGNING_PASSWORD }}
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.GPG_SIGNING_KEY }}
 
-      # ── 6. 构建并发布所有模块到 Maven Central ─────────────────────────────
-      # publishAllPublicationsToMavenCentralRepository：
-      #   - 编译所有 KMP 目标
-      #   - 生成 Javadoc/Javadoc KLib 源码包
-      #   - GPG 签名
-      #   - 上传到 Central Portal staging
-      # --no-daemon：CI 环境推荐禁用 daemon，避免内存泄漏
       - name: Publish all modules to Maven Central
         run: ./gradlew publishAllPublicationsToMavenCentralRepository --no-daemon
         env:
-          # Central Portal 自动发布（上传后自动 release staging 仓库）
-          # 若需手动审核，改为 false
-          ORG_GRADLE_PROJECT_vanniktechMavenPublishAutomaticPublishing: 'true'
+          ORG_GRADLE_PROJECT_vanniktechMavenPublishAutomaticPublishing: 'false'
         shell: bash
 
-      # ── 7. 发布成功通知 ───────────────────────────────────────────────────
+      # ── 发布成功通知 ───────────────────────────────────────────────────
       - name: Publish success notice
         if: success()
         run: |
@@ -111,7 +48,7 @@ jobs:
           echo "   - com.resderx.rac:a2a:${GITHUB_REF_NAME}"
         shell: bash
 
-      # ── 8. 发布失败通知 ───────────────────────────────────────────────────
+      # ── 发布失败通知 ───────────────────────────────────────────────────
       - name: Publish failure notice
         if: failure()
         run: |
