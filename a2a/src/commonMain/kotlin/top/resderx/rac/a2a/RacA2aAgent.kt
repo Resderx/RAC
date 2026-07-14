@@ -50,7 +50,7 @@ import kotlin.random.Random
  * @property agentCard Agent Card 元数据
  * @property systemPrompt 系统提示词，可空
  */
-class LlmA2aAgent(
+class RacA2aAgent(
     private val llm: top.resderx.rac.dsl.Llm,
     private val agentCard: top.resderx.rac.a2a.AgentCard,
     private val systemPrompt: String? = null,

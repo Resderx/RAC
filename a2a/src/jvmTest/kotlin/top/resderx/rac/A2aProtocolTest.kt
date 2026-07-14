@@ -68,7 +68,7 @@ import kotlin.test.assertTrue
 /**
  * A2A 协议端到端测试（JVM）。
  *
- * - 作用：验证 [A2aAgentServer]（协议分发器）、[LlmA2aAgent]（Llm→A2A 适配器）以及
+ * - 作用：验证 [A2aAgentServer]（协议分发器）、[RacA2aAgent]（Llm→A2A 适配器）以及
  *   Llm DSL 集成（chatWithA2aAgent / serveAsA2aAgent）的核心协议逻辑
  * - 必要性：A2A 协议涉及 JSON-RPC 方法路由、流式事件 Flow、Task 生命周期管理等机制，
  *   需端到端测试验证消息正确路由与状态同步
@@ -362,7 +362,7 @@ class A2aProtocolTest {
         server.close()
     }
 
-    // ==================== LlmA2aAgent + DSL 测试 ====================
+    // ==================== RacA2aAgent + DSL 测试 ====================
 
     /**
      * 创建由 SseCapableMockEngine 支撑的 Llm 实例，handler 决定 HTTP 响应。
@@ -394,7 +394,7 @@ class A2aProtocolTest {
     }
 
     /**
-     * 验证 LlmA2aAgent 正确将 A2A 消息转为 Llm chat 调用并构造 Task。
+     * 验证 RacA2aAgent 正确将 A2A 消息转为 Llm chat 调用并构造 Task。
      */
     @Test
     fun racA2aAgentMapsPromptToChatAndReturnsTask() = runBlocking {
@@ -459,7 +459,7 @@ class A2aProtocolTest {
     }
 
     /**
-     * 验证 LlmA2aAgent 流式调用推送正确的事件序列。
+     * 验证 RacA2aAgent 流式调用推送正确的事件序列。
      */
     @Test
     fun racA2aAgentStreamingPushesUpdates() = runBlocking {

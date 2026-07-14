@@ -29,7 +29,7 @@ import top.resderx.rac.acp.InitializeResult
 import top.resderx.rac.acp.ImplementationInfo
 import top.resderx.rac.acp.PermissionOutcome
 import top.resderx.rac.acp.PermissionOutcomeValue
-import top.resderx.rac.acp.LlmAcpAgent
+import top.resderx.rac.acp.RacAcpAgent
 import top.resderx.rac.acp.SessionLoadParams
 import top.resderx.rac.acp.SessionLoadResult
 import top.resderx.rac.acp.SessionNewParams
@@ -568,10 +568,10 @@ class AcpProtocolTest {
         server.close()
     }
 
-    // ==================== LlmAcpAgent 测试 ====================
+    // ==================== RacAcpAgent 测试 ====================
 
     /**
-     * 验证 LlmAcpAgent 将 ACP prompt 映射为 Llm chat 调用并推送 AgentMessageChunk。
+     * 验证 RacAcpAgent 将 ACP prompt 映射为 Llm chat 调用并推送 AgentMessageChunk。
      */
     @Test
     fun racAcpAgentMapsPromptToChatAndPushesUpdates() = runBlocking {
@@ -596,8 +596,8 @@ class AcpProtocolTest {
         val registry = ProviderRegistry().apply { register(provider) }
         val rac = Llm(httpClient = mockHttpClient, registry = registry, defaultProvider = provider)
 
-        // 创建 LlmAcpAgent
-        val agent = LlmAcpAgent(llm = rac, systemPrompt = "You are helpful")
+        // 创建 RacAcpAgent
+        val agent = RacAcpAgent(llm = rac, systemPrompt = "You are helpful")
 
         // 初始化
         val initResult = agent.initialize(

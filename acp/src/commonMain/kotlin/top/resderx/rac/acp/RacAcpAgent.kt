@@ -37,7 +37,7 @@ import kotlin.concurrent.Volatile
  * - 作用：实现 [AcpAgentHandler]，将 ACP 协议的 session/prompt 请求映射为 Llm 的 [Llm.chat] 调用，
  *   使任何 ACP 兼容的 Client（如 Zed、JetBrains IDE）都能通过 ACP 调用 Llm 管理的 AI 供应商
  * - 必要性：RAC 库需要支持作为 ACP Agent 运行（Server 角色），与 Client 角色对称；
- *   LlmAcpAgent 桥接 ACP 协议语义与 Llm 的 AI 调用语义
+ *   RacAcpAgent 桥接 ACP 协议语义与 Llm 的 AI 调用语义
  * - 设计思路：
  *   1. 会话管理：sessions Map 维护每个 ACP 会话的对话历史（List<Message>），跨轮次保持上下文
  *   2. 内容转换：ACP ContentBlock → RAC Content（text/image/audio 直接映射，resource 转文本）
@@ -63,7 +63,7 @@ import kotlin.concurrent.Volatile
  * @property agentCapabilities Agent 能力声明
  * @property systemPrompt 系统提示词，每次 chat 调用时注入；null 表示不注入
  */
-class LlmAcpAgent(
+class RacAcpAgent(
     private val llm: Llm,
     private val agentInfo: ImplementationInfo = ImplementationInfo(
         name = "rac-agent",

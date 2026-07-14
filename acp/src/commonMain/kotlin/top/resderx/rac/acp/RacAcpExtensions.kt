@@ -83,14 +83,14 @@ suspend fun Llm.chatWithAcpAgent(
 /**
  * 将 Llm 作为 ACP Agent 启动，通过 stdio 与 ACP Client 通信（Llm 扩展函数）。
  *
- * - 作用：创建 [LlmAcpAgent]（将 Llm 的 AI 调用能力适配为 ACP Agent）并包装进 [AcpAgentServer]，
+ * - 作用：创建 [RacAcpAgent]（将 Llm 的 AI 调用能力适配为 ACP Agent）并包装进 [AcpAgentServer]，
  *   使任何 ACP 兼容的 Client（如 Zed、JetBrains IDE）都能通过 ACP 协议调用 Llm 管理的 AI 供应商
  * - 必要性：Llm 需支持 ACP Agent 角色（Server 端），与 Client 角色（[chatWithAcpAgent]）对称；
- *   本方法封装 LlmAcpAgent + AcpAgentServer 的创建，调用方只需配置 Agent 信息与系统提示
+ *   本方法封装 RacAcpAgent + AcpAgentServer 的创建，调用方只需配置 Agent 信息与系统提示
  * - 模块拆分：本扩展函数位于 rac-acp 模块，避免 core 模块依赖 ACP 协议包
  * - 设计思路：
- *   1. 构造 [LlmAcpAgent]：以当前 Llm 实例为 AI 引擎，配置 agentInfo/agentCapabilities/systemPrompt
- *   2. 构造 [AcpAgentServer]：以 LlmAcpAgent 为 handler，创建 stdio 服务端连接
+ *   1. 构造 [RacAcpAgent]：以当前 Llm 实例为 AI 引擎，配置 agentInfo/agentCapabilities/systemPrompt
+ *   2. 构造 [AcpAgentServer]：以 RacAcpAgent 为 handler，创建 stdio 服务端连接
  *   3. 返回 AcpAgentServer（尚未启动），调用方需调用 [AcpAgentServer.start] 启动 dispatcher
  * - 实现方式：fun 返回 AcpAgentServer，不启动 dispatcher（调用方控制启动时机）
  * - 可能的问题：stdio 服务端连接读取自身 stdin/stdout，仅 JVM 平台支持；
@@ -115,7 +115,7 @@ fun Llm.serveAsAcpAgent(
     agentCapabilities: AgentCapabilities = AgentCapabilities(),
     systemPrompt: String? = null,
 ): AcpAgentServer {
-    val handler = LlmAcpAgent(
+    val handler = RacAcpAgent(
         llm = this,
         agentInfo = agentInfo,
         agentCapabilities = agentCapabilities,

@@ -97,14 +97,14 @@ suspend fun top.resderx.rac.dsl.Llm.chatWithA2aAgent(
 /**
  * 将 Llm 作为 A2A Agent Server 启动，返回协议无关的 JSON-RPC 分发器（Llm 扩展函数）。
  *
- * - 作用：创建 [top.resderx.rac.a2a.LlmA2aAgent]（将 Llm 的 AI 调用能力适配为 A2A Agent）并包装进 [top.resderx.rac.a2a.A2aAgentServer]，
+ * - 作用：创建 [top.resderx.rac.a2a.RacA2aAgent]（将 Llm 的 AI 调用能力适配为 A2A Agent）并包装进 [top.resderx.rac.a2a.A2aAgentServer]，
  *   使任何 A2A 兼容的 Client 都能通过 A2A 协议调用 Llm 管理的 AI 供应商
  * - 必要性：Llm 需支持 A2A Agent 角色（Server 端），与 Client 角色（[top.resderx.rac.a2a.chatWithA2aAgent]）对称；
- *   本方法封装 LlmA2aAgent + A2aAgentServer 的创建，调用方只需配置 Agent Card 与系统提示
+ *   本方法封装 RacA2aAgent + A2aAgentServer 的创建，调用方只需配置 Agent Card 与系统提示
  * - 模块拆分：本扩展函数位于 rac-a2a 模块，避免 core 模块依赖 A2A 协议包
  * - 设计思路：
  *   1. 构造 [top.resderx.rac.a2a.AgentCard]：描述 Agent 身份、能力、端点
- *   2. 构造 [top.resderx.rac.a2a.LlmA2aAgent]：以当前 Llm 实例为 AI 引擎
+ *   2. 构造 [top.resderx.rac.a2a.RacA2aAgent]：以当前 Llm 实例为 AI 引擎
  *   3. 构造 [top.resderx.rac.a2a.A2aAgentServer]：协议无关的 JSON-RPC 分发器
  *   4. 返回 A2aAgentServer（调用方需自行绑定 HTTP 服务器）
  * - 与 [serveAsAcpAgent] 的差异：
@@ -127,7 +127,7 @@ fun top.resderx.rac.dsl.Llm.serveAsA2aAgent(
     ),
     systemPrompt: String? = null,
 ): top.resderx.rac.a2a.A2aAgentServer {
-    val handler = top.resderx.rac.a2a.LlmA2aAgent(
+    val handler = top.resderx.rac.a2a.RacA2aAgent(
         llm = this,
         agentCard = agentCard,
         systemPrompt = systemPrompt,
