@@ -31,12 +31,6 @@ jobs:
           ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.GPG_SIGNING_PASSWORD }}
           ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.GPG_SIGNING_KEY }}
 
-      - name: Publish all modules to Maven Central
-        run: ./gradlew publishAllPublicationsToMavenCentralRepository --no-daemon
-        env:
-          ORG_GRADLE_PROJECT_vanniktechMavenPublishAutomaticPublishing: 'false'
-        shell: bash
-
       # ── 发布成功通知 ───────────────────────────────────────────────────
       - name: Publish success notice
         if: success()
