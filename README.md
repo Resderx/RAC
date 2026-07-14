@@ -1,4 +1,4 @@
-# RAC（ResDerX AI Call）— Kotlin Multiplatform AI 模型调用库
+# RAC — Kotlin Multiplatform AI 模型调用库
 
 RAC 是一个基于 Kotlin Multiplatform 与 Ktor 的 AI 模型调用库，通过统一的 `llm { }` DSL 入口接入 11 家 LLM 供应商，覆盖 3 种 API 协议（OpenAI Chat Completions、OpenAI Responses、Anthropic Messages），支持非流式调用、流式调用、工具调用（Tool Calling）与自动化 Agent，并双向支持 Agent Client Protocol（ACP）与 Agent-to-Agent Protocol（A2A）——既能作为 Client 调用外部 Agent，也能将自身 Agent 暴露为 ACP / A2A Server。
 
