@@ -63,21 +63,8 @@ kotlin {
         generateTypeScriptDefinitions()
         binaries.executable()
 
-        browser {
-            testTask {
-                useMocha {
-                    timeout = "30s"
-                }
-            }
-        }
-
-        nodejs {
-            testTask {
-                useMocha {
-                    timeout = "30s"
-                }
-            }
-        }
+        browser()
+        nodejs()
     }
 
     @OptIn(ExperimentalWasmDsl::class)
@@ -86,21 +73,8 @@ kotlin {
         generateTypeScriptDefinitions()
         binaries.executable()
 
-        browser {
-            testTask {
-                useMocha {
-                    timeout = "30s"
-                }
-            }
-        }
-
-        nodejs {
-            testTask {
-                useMocha {
-                    timeout = "30s"
-                }
-            }
-        }
+        browser()
+        nodejs()
     }
 
     mingwX64()
