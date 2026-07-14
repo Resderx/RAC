@@ -14,10 +14,10 @@
 name: Build & Test
 
 on:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
+#  push:
+#    branches: [ master ]
+#  pull_request:
+#    branches: [ master ]
   workflow_dispatch:
 
 # 取消同一分支上未完成的旧运行，节省 CI 资源
