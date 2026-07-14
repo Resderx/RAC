@@ -139,12 +139,12 @@ fun streamParsesChunksAndStopsAtDone() = runTest {
 }
 ```
 
-### 示例 3：RAC DSL 端到端 Mock
+### 示例 3：Llm DSL 端到端 Mock
 
-通过构造函数注入 Mock HttpClient 到 `RAC` 实例，验证 `chat { }` / `chatStream { }` 的完整链路：
+通过构造函数注入 Mock HttpClient 到 `Llm` 实例，验证 `chat { }` / `chatStream { }` 的完整链路：
 
 ```kotlin
-private fun racWithMock(handler: MockRequestHandler): RAC {
+private fun racWithMock(handler: MockRequestHandler): Llm {
     val client = HttpClient(SseCapableMockEngine(handler)) {
         install(SSE); install(HttpTimeout)
     }
@@ -153,7 +153,7 @@ private fun racWithMock(handler: MockRequestHandler): RAC {
         defaultApiType = ApiType.COMPLETIONS, defaultModel = "gpt-4",
     )
     val registry = ProviderRegistry().apply { register(provider) }
-    return RAC(httpClient = client, registry = registry, defaultProvider = provider)
+    return Llm(httpClient = client, registry = registry, defaultProvider = provider)
 }
 
 @Test
@@ -191,7 +191,7 @@ $env:GRADLE_USER_HOME='D:\AppData\Gradle'; .\gradlew.bat :core:jvmTest --tests "
 A2A 测试使用两种 fake 策略：
 
 - **`FakeA2aAgentHandler`**：可控 handler 实现，记录调用并返回预设结果，用于测试 `A2aAgentServer` 的 JSON-RPC 路由
-- **`SseCapableMockEngine`**：模拟 AI 供应商 HTTP 响应，用于测试 `RacA2aAgent` 的 RAC chat 集成
+- **`SseCapableMockEngine`**：模拟 AI 供应商 HTTP 响应，用于测试 `LlmA2aAgent` 的 Llm chat 集成
 
 ```powershell
 $env:GRADLE_USER_HOME='D:\AppData\Gradle'; .\gradlew.bat :core:jvmTest --tests "com.resderx.rac.A2aProtocolTest"
@@ -226,12 +226,12 @@ class NativeSseParseTest {
 | --- | --- |
 | `SseCapableMockEngine.kt` | 支持 SSE 的 MockEngine 子类，所有 SSE 测试的基础设施 |
 | `CompletionsClientMockTest.kt` | CompletionsClient 非流式/流式/错误处理 |
-| `RacDslMockTest.kt` | RAC DSL 端到端（chat / chatStream） |
+| `RacDslMockTest.kt` | Llm DSL 端到端（chat / chatStream） |
 | `SSEClientMockTest.kt` | SSEClient 分块解析 |
 | `ToolLoopTest.kt` | 多轮工具调用循环（chatWithTools / chatWithMcp） |
 | `RetryExecutorTest.kt` | 重试执行器（429/5xx 退避、Retry-After） |
-| `AcpProtocolTest.kt` | ACP 协议端到端（Client/AgentServer/RacAcpAgent/DSL 集成） |
-| `A2aProtocolTest.kt` | A2A 协议端到端（AgentServer/RacA2aAgent/DSL 集成） |
+| `AcpProtocolTest.kt` | ACP 协议端到端（Client/AgentServer/LlmAcpAgent/DSL 集成） |
+| `A2aProtocolTest.kt` | A2A 协议端到端（AgentServer/LlmA2aAgent/DSL 集成） |
 | `IntegrationTest.kt` | 真实 API 集成测试（默认跳过） |
 
 ### mingwX64Test
@@ -257,11 +257,11 @@ class NativeSseParseTest {
 
 **解决**：统一使用 `SseCapableMockEngine`，并确保 `HttpClient(...) { install(SSE); install(HttpTimeout) }`。
 
-### 2. 测试报 "No provider registered in RAC"
+### 2. 测试报 "No provider registered in LLM"
 
-**原因**：`rac { }` 块内未注册任何供应商，或 `defaultProviderName` 指向未注册的供应商。
+**原因**：`llm { }` 块内未注册任何供应商，或 `defaultProviderName` 指向未注册的供应商。
 
-**解决**：在 `rac { }` 块内至少注册一个供应商（如 `deepseek { apiKey(...) }`）；若手动构造 `RAC`，确保 `registry` 中已 `register(provider)` 且 `defaultProvider` 来自同一 registry。
+**解决**：在 `llm { providers { } }` 块内至少注册一个供应商（如 `deepseek { apiKey(...) }`）；若手动构造 `Llm`，确保 `registry` 中已 `register(provider)` 且 `defaultProvider` 来自同一 registry。
 
 ### 3. chatStream 抛 RACException "requires a Completions API provider"
 
@@ -291,4 +291,4 @@ class NativeSseParseTest {
 
 **原因**：测试中创建的 `HttpClient` 未调用 `close()`，可能导致连接泄漏。
 
-**解决**：测试结束前调用 `rac.httpClient.close()` 或 `client.close()`。`RAC` 持有 HttpClient 生命周期，调用方负责关闭。
+**解决**：测试结束前调用 `rac.httpClient.close()` 或 `client.close()`。`Llm` 持有 HttpClient 生命周期，调用方负责关闭。

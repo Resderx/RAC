@@ -39,7 +39,7 @@ plugins {
 // ── 坐标 ──────────────────────────────────────────────────────────────────
 
 group = "com.resderx.rac"
-version = "0.3.0-alpha"
+version = "0.1.0-alpha01"
 
 // ── KMP 目标平台 ──────────────────────────────────────────────────────────
 
@@ -47,7 +47,8 @@ kotlin {
     // iOS（Arm64 + Simulator）
     listOf(
         iosArm64(),
-        iosSimulatorArm64()
+        iosSimulatorArm64(),
+        iosX64()
     ).forEach { iosTarget ->
         iosTarget.binaries.framework {
             baseName = "Shared"
@@ -77,9 +78,21 @@ kotlin {
     }
 
     mingwX64()
+
     linuxX64()
     linuxArm64()
+
     macosArm64()
+    macosX64()
+
+    tvosX64()
+    tvosArm64()
+    tvosSimulatorArm64()
+
+    watchosArm32()
+    watchosArm64()
+    watchosDeviceArm64()
+    watchosSimulatorArm64()
 
     androidLibrary {
         namespace = "com.resderx.rac"

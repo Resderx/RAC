@@ -18,10 +18,10 @@ A2A 是 Google 于 2025 年 4 月发布的开放协议，基于 JSON-RPC 2.0 + H
 
 ## 架构
 
-RAC 的 A2A 支持分为以下组件（位于 `a2a/` 包）：
+RAC 的 A2A 支持分为以下组件（位于 `a2a/` 模块，`com.resderx.rac.a2a` 包）：
 
 ```
-a2a/
+a2a/                                          # 独立 Gradle 模块（rac-a2a），依赖 rac-core
 ├── A2aTypes.kt              # 协议类型：Role、TaskState、TaskStatus、Task、Message、A2aMetadata
 ├── A2aPart.kt               # Part 多态模型（TextPart/FilePart/DataPart）+ Artifact
 ├── A2aAgentCard.kt          # Agent 发现模型：AgentCard、AgentProvider、AgentCapabilities、AgentSkill
@@ -30,20 +30,21 @@ a2a/
 ├── DefaultA2aClient.kt      # A2aClient 默认实现（JSON-RPC over HTTP + SSE）
 ├── A2aAgentHandler.kt       # Agent 业务逻辑处理器接口 + A2aAgentContext
 ├── A2aAgentServer.kt        # 协议无关 JSON-RPC 分发器（dispatch / dispatchStreaming）
-└── RacA2aAgent.kt           # RAC → A2A Agent 适配器
+├── RacA2aAgent.kt           # Llm → A2A Agent 适配器（类名 LlmA2aAgent，文件名保留历史前缀）
+└── RacA2aExtensions.kt      # Llm.chatWithA2aAgent / Llm.serveAsA2aAgent 扩展函数
 ```
 
 ## 作为 Client 调用远端 Agent
 
 ### 基本用法
 
-通过 `A2aClient` 连接远端 A2A Server，再用 `RAC.chatWithA2aAgent` 发起流式调用：
+通过 `A2aClient` 连接远端 A2A Server，再用 `Llm.chatWithA2aAgent` 扩展函数发起流式调用（`Llm` 实例仅作为命名空间锚点，不直接使用其内部能力）：
 
 ```kotlin
 import com.resderx.rac.a2a.A2aClient
 import com.resderx.rac.a2a.A2aClientConfig
 
-suspend fun a2aClientExample(ai: RAC) {
+suspend fun a2aClientExample(ai: Llm) {
     val client = A2aClient(
         A2aClientConfig(
             baseUrl = "https://agent.example.com",
@@ -129,15 +130,15 @@ card.skills.forEach { skill ->
 
 ## 作为 Agent Server 暴露服务
 
-### 使用 RAC 内置适配器
+### 使用 Llm 内置适配器
 
-`serveAsA2aAgent` 将 RAC 的 `chat` 调用封装为 A2A Agent，返回协议无关的 JSON-RPC 分发器：
+`serveAsA2aAgent` 将 Llm 的 `chat` 调用封装为 A2A Agent，返回协议无关的 JSON-RPC 分发器：
 
 ```kotlin
 val server = ai.serveAsA2aAgent(
     agentCard = AgentCard(
         name = "rac-agent",
-        description = "RAC Agent — Kotlin Multiplatform AI Call Library",
+        description = "LLM Agent — Kotlin Multiplatform AI Call Library",
         url = "https://my-agent.example.com",
         provider = AgentProvider(organization = "ResDerX"),
         capabilities = AgentCapabilities(streaming = true),
@@ -159,9 +160,9 @@ server.close()
 
 > **注意**：`A2aAgentServer` 是协议无关的 JSON-RPC 分发器，不绑定 HTTP 服务器。调用方需自行将 `dispatch` / `dispatchStreaming` 绑定到 HTTP 端点（如 Ktor `embeddedServer`、Spring Boot 等）。这是 KMP 库不引入 HTTP 服务器依赖的设计选择，保持跨平台兼容。
 
-`RacA2aAgent` 适配器内部：
-1. `sendMessage` 提取 A2A Message 中的文本 → 调用 `RAC.chat` → 构造含 AI 响应的 Task
-2. `sendStreamingMessage` 推送 WORKING 状态 → 执行 `RAC.chat` → 推送 ArtifactUpdate（AI 响应文本）→ 推送 COMPLETED 最终状态
+`LlmA2aAgent` 适配器内部（文件 `RacA2aAgent.kt`，类名 `LlmA2aAgent`）：
+1. `sendMessage` 提取 A2A Message 中的文本 → 调用 `Llm.chat` → 构造含 AI 响应的 Task
+2. `sendStreamingMessage` 推送 WORKING 状态 → 执行 `Llm.chat` → 推送 ArtifactUpdate（AI 响应文本）→ 推送 COMPLETED 最终状态
 3. `getTask` / `listTasks` / `cancelTask` 通过内存任务存储管理（Mutex 保护并发访问）
 
 ### 自定义 Agent Handler
@@ -324,8 +325,8 @@ A2A 协议测试位于 `core/src/jvmTest/kotlin/com/resderx/rac/A2aProtocolTest.
 - Server 对未知方法返回 METHOD_NOT_FOUND 错误
 - Server 流式分发推送正确的事件序列（Initial → StatusUpdate → ArtifactUpdate → final StatusUpdate）
 - Server 返回 Agent Card JSON
-- RacA2aAgent 适配器（prompt → chat → Task 映射）
-- RacA2aAgent 流式调用推送更新
+- LlmA2aAgent 适配器（prompt → chat → Task 映射）
+- LlmA2aAgent 流式调用推送更新
 - DSL 集成（serveAsA2aAgent 返回配置正确的 Server）
 
 ```powershell
