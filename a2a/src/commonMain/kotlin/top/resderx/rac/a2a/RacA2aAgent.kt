@@ -51,18 +51,18 @@ import kotlin.random.Random
  * @property systemPrompt 系统提示词，可空
  */
 class RacA2aAgent(
-    private val llm: top.resderx.rac.dsl.Llm,
-    private val agentCard: top.resderx.rac.a2a.AgentCard,
+    private val llm: Llm,
+    private val agentCard: AgentCard,
     private val systemPrompt: String? = null,
-) : top.resderx.rac.a2a.A2aAgentHandler {
+) : A2aAgentHandler {
 
     /** 内存任务存储：taskId → Task。由 [tasksMutex] 保护。 */
-    private val tasks = mutableMapOf<String, top.resderx.rac.a2a.Task>()
+    private val tasks = mutableMapOf<String, Task>()
 
     /** tasks 访问互斥锁。 */
     private val tasksMutex = Mutex()
 
-    override fun getAgentCard(): top.resderx.rac.a2a.AgentCard = agentCard
+    override fun getAgentCard(): AgentCard = agentCard
 
     /**
      * 从 A2A Message 提取文本内容。
@@ -73,8 +73,8 @@ class RacA2aAgent(
      * @param message A2A 消息
      * @return 拼接后的文本
      */
-    private fun extractText(message: top.resderx.rac.a2a.Message): String =
-        message.parts.filterIsInstance<top.resderx.rac.a2a.TextPart>().joinToString("") { it.text }
+    private fun extractText(message: Message): String =
+        message.parts.filterIsInstance<TextPart>().joinToString("") { it.text }
 
     /**
      * 将 RAC AIMessage 的 FinishReason 映射为 A2A TaskState。
@@ -88,12 +88,12 @@ class RacA2aAgent(
      * @param finishReason RAC 的完成原因
      * @return A2A 任务状态
      */
-    private fun finishReasonToTaskState(finishReason: top.resderx.rac.messages.FinishReason): top.resderx.rac.a2a.TaskState = when (finishReason) {
-        top.resderx.rac.messages.FinishReason.STOP -> top.resderx.rac.a2a.TaskState.COMPLETED
-        top.resderx.rac.messages.FinishReason.LENGTH -> top.resderx.rac.a2a.TaskState.COMPLETED
-        top.resderx.rac.messages.FinishReason.TOOL_CALLS -> top.resderx.rac.a2a.TaskState.INPUT_REQUIRED
-        top.resderx.rac.messages.FinishReason.CONTENT_FILTER -> top.resderx.rac.a2a.TaskState.FAILED
-        top.resderx.rac.messages.FinishReason.UNKNOWN -> top.resderx.rac.a2a.TaskState.FAILED
+    private fun finishReasonToTaskState(finishReason: FinishReason): TaskState = when (finishReason) {
+        FinishReason.STOP -> TaskState.COMPLETED
+        FinishReason.LENGTH -> TaskState.COMPLETED
+        FinishReason.TOOL_CALLS -> TaskState.INPUT_REQUIRED
+        FinishReason.CONTENT_FILTER -> TaskState.FAILED
+        FinishReason.UNKNOWN -> TaskState.FAILED
     }
 
     /**
@@ -118,25 +118,25 @@ class RacA2aAgent(
      * @param isStreaming 是否为流式调用（影响 Task 初始状态）
      * @return 包含 AI 响应的 Task
      */
-    private suspend fun executeChat(params: SendMessageParams): top.resderx.rac.a2a.Task {
+    private suspend fun executeChat(params: SendMessageParams): Task {
         val promptText = extractText(params.message)
-        val aiMessage: top.resderx.rac.messages.AIMessage = llm.chat {
+        val aiMessage: AIMessage = llm.chat {
             systemPrompt?.let { system(it) }
             user(promptText)
         }
 
         val taskState = finishReasonToTaskState(aiMessage.finishReason)
-        val agentMessage = top.resderx.rac.a2a.Message(
-            role = top.resderx.rac.a2a.Role.AGENT,
-            parts = listOf(top.resderx.rac.a2a.TextPart(text = aiMessage.content)),
+        val agentMessage = Message(
+            role = Role.AGENT,
+            parts = listOf(TextPart(text = aiMessage.content)),
         )
 
         val taskId = params.id ?: generateTaskId()
-        val task = top.resderx.rac.a2a.Task(
+        val task = Task(
             id = taskId,
             sessionId = params.sessionId,
             contextId = params.contextId,
-            status = top.resderx.rac.a2a.TaskStatus(state = taskState),
+            status = TaskStatus(state = taskState),
             history = listOf(params.message, agentMessage),
             artifacts = null,
         )
@@ -145,26 +145,26 @@ class RacA2aAgent(
         return task
     }
 
-    override suspend fun sendMessage(params: top.resderx.rac.a2a.SendMessageParams): top.resderx.rac.a2a.SendMessageResult {
-        return top.resderx.rac.a2a.SendMessageResult.TaskResult(task = executeChat(params))
+    override suspend fun sendMessage(params: SendMessageParams): SendMessageResult {
+        return SendMessageResult.TaskResult(task = executeChat(params))
     }
 
     override suspend fun sendStreamingMessage(
-        params: top.resderx.rac.a2a.SendStreamingMessageParams,
-        context: top.resderx.rac.a2a.A2aAgentContext,
-    ): top.resderx.rac.a2a.SendMessageResult {
+        params: SendStreamingMessageParams,
+        context: A2aAgentContext,
+    ): SendMessageResult {
         // 推送 WORKING 状态
         val taskId = params.id ?: generateTaskId()
         context.sendStatusUpdate(
-            top.resderx.rac.a2a.TaskStatusUpdateEvent(
+            TaskStatusUpdateEvent(
                 id = taskId,
-                status = top.resderx.rac.a2a.TaskStatus(state = top.resderx.rac.a2a.TaskState.WORKING),
+                status = TaskStatus(state = TaskState.WORKING),
             )
         )
 
         // 执行 chat——将 SendStreamingMessageParams 转为 SendMessageParams（结构一致）
         val task = executeChat(
-            top.resderx.rac.a2a.SendMessageParams(
+            SendMessageParams(
                 id = params.id,
                 sessionId = params.sessionId,
                 contextId = params.contextId,
@@ -175,14 +175,14 @@ class RacA2aAgent(
         )
 
         // 推送 agent 消息作为 artifact
-        val agentMessage = task.history?.lastOrNull { it.role == top.resderx.rac.a2a.Role.AGENT }
+        val agentMessage = task.history?.lastOrNull { it.role == Role.AGENT }
         if (agentMessage != null) {
-            val textPart = agentMessage.parts.filterIsInstance<top.resderx.rac.a2a.TextPart>().firstOrNull()
+            val textPart = agentMessage.parts.filterIsInstance<TextPart>().firstOrNull()
             if (textPart != null) {
                 context.sendArtifactUpdate(
-                    top.resderx.rac.a2a.TaskArtifactUpdateEvent(
+                    TaskArtifactUpdateEvent(
                         id = taskId,
-                        artifact = top.resderx.rac.a2a.Artifact(
+                        artifact = Artifact(
                             artifactId = "message-1",
                             parts = listOf(textPart),
                             lastChunk = true,
@@ -195,37 +195,37 @@ class RacA2aAgent(
 
         // 推送最终状态
         context.sendStatusUpdate(
-            top.resderx.rac.a2a.TaskStatusUpdateEvent(
+            TaskStatusUpdateEvent(
                 id = taskId,
                 status = task.status,
                 final = true,
             )
         )
 
-        return top.resderx.rac.a2a.SendMessageResult.TaskResult(task = task)
+        return SendMessageResult.TaskResult(task = task)
     }
 
-    override suspend fun getTask(params: top.resderx.rac.a2a.GetTaskParams): top.resderx.rac.a2a.GetTaskResult {
+    override suspend fun getTask(params: GetTaskParams): GetTaskResult {
         val task = tasksMutex.withLock { tasks[params.id] }
-            ?: throw top.resderx.rac.exceptions.RACException("Task not found: ${params.id}")
-        return top.resderx.rac.a2a.GetTaskResult(task = task)
+            ?: throw RACException("Task not found: ${params.id}")
+        return GetTaskResult(task = task)
     }
 
-    override suspend fun listTasks(params: top.resderx.rac.a2a.ListTasksParams): top.resderx.rac.a2a.ListTasksResult {
+    override suspend fun listTasks(params: ListTasksParams): ListTasksResult {
         val allTasks = tasksMutex.withLock { tasks.values.toList() }
         val filtered = allTasks
             .filter { params.contextId == null || it.contextId == params.contextId }
             .filter { params.state == null || it.status.state == params.state }
             .let { list -> params.limit?.let { list.take(it) } ?: list }
-        return top.resderx.rac.a2a.ListTasksResult(tasks = filtered)
+        return ListTasksResult(tasks = filtered)
     }
 
-    override suspend fun cancelTask(params: top.resderx.rac.a2a.CancelTaskParams): top.resderx.rac.a2a.CancelTaskResult {
+    override suspend fun cancelTask(params: CancelTaskParams): CancelTaskResult {
         val task = tasksMutex.withLock {
-            tasks[params.id]?.copy(status = top.resderx.rac.a2a.TaskStatus(state = top.resderx.rac.a2a.TaskState.CANCELED))
+            tasks[params.id]?.copy(status = TaskStatus(state = TaskState.CANCELED))
                 ?.also { tasks[params.id] = it }
-        } ?: throw top.resderx.rac.exceptions.RACException("Task not found: ${params.id}")
-        return top.resderx.rac.a2a.CancelTaskResult(task = task)
+        } ?: throw RACException("Task not found: ${params.id}")
+        return CancelTaskResult(task = task)
     }
 
     override suspend fun close() {
