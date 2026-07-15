@@ -44,12 +44,12 @@ kotlin {
 
 dependencies {
     commonMain {
-        implementation("top.resderx.rac:rac-core:0.1.0-alpha02")
+        implementation("top.resderx.rac:rac-core:0.1.0-alpha01")
     }
     // optional protocol modules
-    // commonMain { implementation("top.resderx.rac:rac-mcp:0.1.0-alpha02") }
-    // commonMain { implementation("top.resderx.rac:rac-acp:0.1.0-alpha02") }
-    // commonMain { implementation("top.resderx.rac:rac-a2a:0.1.0-alpha02") }
+    // commonMain { implementation("top.resderx.rac:rac-mcp:0.1.0-alpha01") }
+    // commonMain { implementation("top.resderx.rac:rac-acp:0.1.0-alpha01") }
+    // commonMain { implementation("top.resderx.rac:rac-a2a:0.1.0-alpha01") }
 }
 ```
 
@@ -65,7 +65,7 @@ repositories {
 
 ```kotlin
 dependencies {
-    implementation("top.resderx.rac:rac-core:0.1.0-alpha02")
+    implementation("top.resderx.rac:rac-core:0.1.0-alpha01")
 }
 ```
 
