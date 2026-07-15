@@ -39,7 +39,7 @@ import io.ktor.client.plugins.sse.SSE
  * 时间复杂度：create() 为 O(1)，仅做对象装配。
  * 空间复杂度：O(1)，工厂自身无状态；返回的 HttpClient 内存占用由引擎实现决定。
  */
-public object HttpClientFactory {
+object HttpClientFactory {
 
     /**
      * 创建预配置的 HttpClient。
@@ -53,7 +53,7 @@ public object HttpClientFactory {
      * @param timeoutMs 请求/连接/Socket 超时毫秒数，0 或负数表示无超时，默认 60000ms。
      * @return 预配置的 HttpClient，调用方负责 close()。
      */
-    public fun create(timeoutMs: Long = 60_000L): HttpClient {
+    fun create(timeoutMs: Long = 60_000L): HttpClient {
         return HttpClient(getEngine()) {
             configureSseAndTimeout(timeoutMs)
         }
@@ -71,7 +71,7 @@ public object HttpClientFactory {
      * @param timeoutMs 请求/连接/Socket 超时毫秒数，0 或负数表示无超时，默认 60000ms。
      * @return 预配置的 HttpClient，调用方负责 close()。
      */
-    public fun createWithEngine(engine: HttpClientEngine, timeoutMs: Long = 60_000L): HttpClient {
+    fun createWithEngine(engine: HttpClientEngine, timeoutMs: Long = 60_000L): HttpClient {
         return HttpClient(engine) {
             configureSseAndTimeout(timeoutMs)
         }

@@ -47,7 +47,7 @@ sealed interface Part
 @SerialName("text")
 data class TextPart(
     val text: String,
-) : top.resderx.rac.a2a.Part
+) : Part
 
 /**
  * 文件内容 Part，通过 URI 引用或 Base64 内嵌二进制数据。
@@ -57,8 +57,8 @@ data class TextPart(
 @Serializable
 @SerialName("file")
 data class FilePart(
-    val file: top.resderx.rac.a2a.FilePartBody,
-) : top.resderx.rac.a2a.Part
+    val file: FilePartBody,
+) : Part
 
 /**
  * 结构化数据 Part，承载任意 JSON 对象。
@@ -71,8 +71,8 @@ data class FilePart(
 @Serializable
 @SerialName("data")
 data class DataPart(
-    val data: top.resderx.rac.a2a.DataPartBody,
-) : top.resderx.rac.a2a.Part
+    val data: DataPartBody,
+) : Part
 
 /**
  * A2A v1.0 Artifact 模型——Agent 任务产出物。
@@ -94,7 +94,7 @@ data class Artifact(
     val artifactId: String,
     val name: String? = null,
     val description: String? = null,
-    val parts: List<top.resderx.rac.a2a.Part> = emptyList(),
+    val parts: List<Part> = emptyList(),
     val index: Int = 0,
     val lastChunk: Boolean? = null,
     val metadata: Map<String, String>? = null,

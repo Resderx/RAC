@@ -62,7 +62,7 @@ enum class TaskState {
  */
 @Serializable
 data class TaskStatus(
-    val state: top.resderx.rac.a2a.TaskState,
+    val state: TaskState,
     val message: String? = null,
     val timestamp: String? = null,
 )
@@ -86,9 +86,9 @@ data class Task(
     val id: String,
     val sessionId: String? = null,
     val contextId: String? = null,
-    val status: top.resderx.rac.a2a.TaskStatus,
-    val history: List<top.resderx.rac.a2a.Message>? = null,
-    val artifacts: List<top.resderx.rac.a2a.Artifact>? = null,
+    val status: TaskStatus,
+    val history: List<Message>? = null,
+    val artifacts: List<Artifact>? = null,
     val metadata: Map<String, String>? = null,
 )
 
@@ -106,8 +106,8 @@ data class Task(
  */
 @Serializable
 data class Message(
-    val role: top.resderx.rac.a2a.Role,
-    val parts: List<top.resderx.rac.a2a.Part> = emptyList(),
+    val role: Role,
+    val parts: List<Part> = emptyList(),
     val taskId: String? = null,
     val contextId: String? = null,
     val metadata: Map<String, String>? = null,

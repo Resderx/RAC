@@ -14,17 +14,15 @@
 
 package top.resderx.rac
 
-import top.resderx.rac.dsl.llm
-import top.resderx.rac.dsl.deepseek
-import top.resderx.rac.dsl.openai
-import top.resderx.rac.dsl.anthropic
-import top.resderx.rac.messages.AIMessage
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
+import top.resderx.rac.dsl.anthropic
+import top.resderx.rac.dsl.deepseek
+import top.resderx.rac.dsl.llm
+import top.resderx.rac.dsl.openai
+import top.resderx.rac.messages.AIMessage
 import kotlin.test.Test
-import kotlin.test.assertEquals
 import kotlin.test.assertTrue
-import kotlin.test.Ignore
 
 /**
  * 集成测试脚手架——默认跳过，仅当环境变量 RAC_INTEGRATION_TEST=true 时运行。

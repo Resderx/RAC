@@ -14,19 +14,10 @@
 
 package top.resderx.rac.a2a
 
-import top.resderx.rac.exceptions.RACException
-import top.resderx.rac.mcp.JsonRpcRequest
-import top.resderx.rac.mcp.JsonRpcResponse
-import top.resderx.rac.network.HttpClientFactory
-import top.resderx.rac.network.SSEClient
-import io.ktor.client.HttpClient
-import io.ktor.client.request.get
-import io.ktor.client.request.header
-import io.ktor.client.request.post
-import io.ktor.client.request.setBody
-import io.ktor.client.statement.bodyAsText
-import io.ktor.http.ContentType
-import io.ktor.http.contentType
+import io.ktor.client.*
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
+import io.ktor.http.*
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -34,10 +25,13 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.encodeToJsonElement
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import top.resderx.rac.exceptions.RACException
+import top.resderx.rac.mcp.JsonRpcRequest
+import top.resderx.rac.mcp.JsonRpcResponse
+import top.resderx.rac.network.HttpClientFactory
+import top.resderx.rac.network.SSEClient
 import kotlin.concurrent.Volatile
 
 /**
@@ -64,8 +58,8 @@ import kotlin.concurrent.Volatile
  * @property config 客户端配置
  */
 class DefaultA2aClient(
-    private val config: top.resderx.rac.a2a.A2aClientConfig,
-) : top.resderx.rac.a2a.A2aClient {
+    private val config: A2aClientConfig,
+) : A2aClient {
 
     /** JSON 序列化器，ignoreUnknownKeys 兼容不同 Agent 实现，encodeDefaults=false 省略 null 字段。 */
     private val json = Json {
@@ -163,32 +157,32 @@ class DefaultA2aClient(
      * - 作用：tasks/send 返回类型多态，需运行时判断
      * - 实现：检查 JsonObject 是否含 "status" 字段（Task 标志）
      */
-    private fun parseSendMessageResult(result: JsonElement): top.resderx.rac.a2a.SendMessageResult {
+    private fun parseSendMessageResult(result: JsonElement): SendMessageResult {
         val obj = result.jsonObject
         return if (obj.containsKey("status")) {
-            top.resderx.rac.a2a.SendMessageResult.TaskResult(
-                task = json.decodeFromJsonElement(top.resderx.rac.a2a.Task.serializer(), result)
+            SendMessageResult.TaskResult(
+                task = json.decodeFromJsonElement(Task.serializer(), result)
             )
         } else {
-            top.resderx.rac.a2a.SendMessageResult.MessageResult(
-                result = json.decodeFromJsonElement(top.resderx.rac.a2a.Message.serializer(), result)
+            SendMessageResult.MessageResult(
+                result = json.decodeFromJsonElement(Message.serializer(), result)
             )
         }
     }
 
-    override suspend fun sendMessage(params: top.resderx.rac.a2a.SendMessageParams): top.resderx.rac.a2a.SendMessageResult {
-        val paramsJson = json.encodeToJsonElement(top.resderx.rac.a2a.SendMessageParams.serializer(), params)
+    override suspend fun sendMessage(params: SendMessageParams): SendMessageResult {
+        val paramsJson = json.encodeToJsonElement(SendMessageParams.serializer(), params)
         val result = sendRpcRequest("tasks/send", paramsJson)
         return parseSendMessageResult(result)
     }
 
-    override fun sendStreamingMessage(params: top.resderx.rac.a2a.SendStreamingMessageParams): Flow<top.resderx.rac.a2a.A2aStreamEvent> = flow {
+    override fun sendStreamingMessage(params: SendStreamingMessageParams): Flow<A2aStreamEvent> = flow {
         check(!closed) { "A2aClient is closed" }
         val id = idMutex.withLock { ++requestId }
         val request = JsonRpcRequest.create(
             id = id,
             method = "tasks/sendSubscribe",
-            params = json.encodeToJsonElement(top.resderx.rac.a2a.SendStreamingMessageParams.serializer(), params)
+            params = json.encodeToJsonElement(SendStreamingMessageParams.serializer(), params)
         )
         val requestStr = json.encodeToString(JsonRpcRequest.serializer(), request)
 
@@ -220,7 +214,8 @@ class DefaultA2aClient(
             if (hasResult && !hasMethod && !hasEmittedInitial) {
                 val result = obj["result"]!!
                 hasEmittedInitial = true
-                emit(top.resderx.rac.a2a.A2aStreamEvent.Initial(
+                emit(
+                    A2aStreamEvent.Initial(
                     parseSendMessageResult(result)
                 ))
                 return@collect
@@ -239,14 +234,14 @@ class DefaultA2aClient(
                         // 判断是 status 还是 artifact 更新
                         if (updateObj.containsKey("status")) {
                             val event = json.decodeFromJsonElement(
-                                top.resderx.rac.a2a.TaskStatusUpdateEvent.serializer(), updateElement
+                                TaskStatusUpdateEvent.serializer(), updateElement
                             )
-                            emit(top.resderx.rac.a2a.A2aStreamEvent.StatusUpdate(event))
+                            emit(A2aStreamEvent.StatusUpdate(event))
                         } else if (updateObj.containsKey("artifact")) {
                             val event = json.decodeFromJsonElement(
-                                top.resderx.rac.a2a.TaskArtifactUpdateEvent.serializer(), updateElement
+                                TaskArtifactUpdateEvent.serializer(), updateElement
                             )
-                            emit(top.resderx.rac.a2a.A2aStreamEvent.ArtifactUpdate(event))
+                            emit(A2aStreamEvent.ArtifactUpdate(event))
                         }
                     }
                 }
@@ -254,38 +249,38 @@ class DefaultA2aClient(
         }
     }
 
-    override suspend fun getTask(params: top.resderx.rac.a2a.GetTaskParams): top.resderx.rac.a2a.GetTaskResult {
-        val paramsJson = json.encodeToJsonElement(top.resderx.rac.a2a.GetTaskParams.serializer(), params)
+    override suspend fun getTask(params: GetTaskParams): GetTaskResult {
+        val paramsJson = json.encodeToJsonElement(GetTaskParams.serializer(), params)
         val result = sendRpcRequest("tasks/get", paramsJson)
-        return top.resderx.rac.a2a.GetTaskResult(
+        return GetTaskResult(
             task = parseResult(
                 result,
-                top.resderx.rac.a2a.Task.serializer()
+                Task.serializer()
             )
         )
     }
 
-    override suspend fun listTasks(params: top.resderx.rac.a2a.ListTasksParams): top.resderx.rac.a2a.ListTasksResult {
-        val paramsJson = json.encodeToJsonElement(top.resderx.rac.a2a.ListTasksParams.serializer(), params)
+    override suspend fun listTasks(params: ListTasksParams): ListTasksResult {
+        val paramsJson = json.encodeToJsonElement(ListTasksParams.serializer(), params)
         val result = sendRpcRequest("tasks/list", paramsJson)
         return parseResult(
             result,
-            top.resderx.rac.a2a.ListTasksResult.serializer()
+            ListTasksResult.serializer()
         )
     }
 
-    override suspend fun cancelTask(params: top.resderx.rac.a2a.CancelTaskParams): top.resderx.rac.a2a.CancelTaskResult {
-        val paramsJson = json.encodeToJsonElement(top.resderx.rac.a2a.CancelTaskParams.serializer(), params)
+    override suspend fun cancelTask(params: CancelTaskParams): CancelTaskResult {
+        val paramsJson = json.encodeToJsonElement(CancelTaskParams.serializer(), params)
         val result = sendRpcRequest("tasks/cancel", paramsJson)
-        return top.resderx.rac.a2a.CancelTaskResult(
+        return CancelTaskResult(
             task = parseResult(
                 result,
-                top.resderx.rac.a2a.Task.serializer()
+                Task.serializer()
             )
         )
     }
 
-    override suspend fun getAgentCard(agentCardUrl: String?): top.resderx.rac.a2a.AgentCard {
+    override suspend fun getAgentCard(agentCardUrl: String?): AgentCard {
         check(!closed) { "A2aClient is closed" }
         val url = agentCardUrl ?: "${config.baseUrl.trimEnd('/')}/.well-known/agent.json"
         val responseText = try {
@@ -302,7 +297,7 @@ class DefaultA2aClient(
             )
         }
         return try {
-            json.decodeFromString(top.resderx.rac.a2a.AgentCard.serializer(), responseText)
+            json.decodeFromString(AgentCard.serializer(), responseText)
         } catch (e: Exception) {
             throw RACException("Agent Card parse error: ${e.message}", e)
         }

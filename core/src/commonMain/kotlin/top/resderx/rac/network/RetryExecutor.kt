@@ -23,6 +23,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * 带自动重试能力的请求执行器，包装 [RequestExecutor] 并按 [RetryPolicy] 重试瞬时错误。
@@ -139,17 +140,17 @@ class RetryExecutor(
                 val retryAfterSec = parseRetryAfter(e)
                 val retryAfterMillis = retryAfterSec?.times(1000)
                 val delayMillis = computeDelay(attempt, retryAfterMillis)
-                delay(delayMillis)
+                delay(delayMillis.milliseconds)
             } catch (e: RACTimeoutException) {
                 lastException = e
                 if (attempt >= policy.maxRetries) throw e
                 val delayMillis = computeDelay(attempt)
-                delay(delayMillis)
+                delay(delayMillis.milliseconds)
             } catch (e: RACNetworkException) {
                 lastException = e
                 if (attempt >= policy.maxRetries) throw e
                 val delayMillis = computeDelay(attempt)
-                delay(delayMillis)
+                delay(delayMillis.milliseconds)
             }
         }
         // 理论上不会到达，for 循环要么 return 要么 throw
@@ -191,19 +192,19 @@ class RetryExecutor(
                 val retryAfterSec = parseRetryAfter(e)
                 val retryAfterMillis = retryAfterSec?.times(1000)
                 val delayMillis = computeDelay(retryCount, retryAfterMillis)
-                delay(delayMillis)
+                delay(delayMillis.milliseconds)
                 retryCount++
             } catch (e: RACTimeoutException) {
                 lastException = e
                 if (retryCount >= policy.maxRetries) throw e
                 val delayMillis = computeDelay(retryCount)
-                delay(delayMillis)
+                delay(delayMillis.milliseconds)
                 retryCount++
             } catch (e: RACNetworkException) {
                 lastException = e
                 if (retryCount >= policy.maxRetries) throw e
                 val delayMillis = computeDelay(retryCount)
-                delay(delayMillis)
+                delay(delayMillis.milliseconds)
                 retryCount++
             }
         }

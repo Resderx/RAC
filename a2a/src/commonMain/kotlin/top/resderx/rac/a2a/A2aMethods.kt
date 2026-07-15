@@ -51,8 +51,8 @@ data class SendMessageParams(
     val id: String? = null,
     val sessionId: String? = null,
     val contextId: String? = null,
-    val message: top.resderx.rac.a2a.Message,
-    val configuration: top.resderx.rac.a2a.SendMessageConfiguration? = null,
+    val message: Message,
+    val configuration: SendMessageConfiguration? = null,
     val metadata: Map<String, String>? = null,
 )
 
@@ -81,12 +81,12 @@ sealed interface SendMessageResult {
     /** 返回的任务对象。 */
     @Serializable
     @SerialName("task")
-    data class TaskResult(val task: top.resderx.rac.a2a.Task) : SendMessageResult
+    data class TaskResult(val task: Task) : SendMessageResult
 
     /** 直接返回的消息（无任务跟踪）。 */
     @Serializable
     @SerialName("message")
-    data class MessageResult(val result: top.resderx.rac.a2a.Message) : SendMessageResult
+    data class MessageResult(val result: Message) : SendMessageResult
 }
 
 /**
@@ -97,8 +97,8 @@ data class SendStreamingMessageParams(
     val id: String? = null,
     val sessionId: String? = null,
     val contextId: String? = null,
-    val message: top.resderx.rac.a2a.Message,
-    val configuration: top.resderx.rac.a2a.SendMessageConfiguration? = null,
+    val message: Message,
+    val configuration: SendMessageConfiguration? = null,
     val metadata: Map<String, String>? = null,
 )
 
@@ -119,7 +119,7 @@ data class GetTaskParams(
  */
 @Serializable
 data class GetTaskResult(
-    val task: top.resderx.rac.a2a.Task,
+    val task: Task,
 )
 
 /**
@@ -132,7 +132,7 @@ data class GetTaskResult(
 @Serializable
 data class ListTasksParams(
     val contextId: String? = null,
-    val state: top.resderx.rac.a2a.TaskState? = null,
+    val state: TaskState? = null,
     val limit: Int? = null,
 )
 
@@ -143,7 +143,7 @@ data class ListTasksParams(
  */
 @Serializable
 data class ListTasksResult(
-    val tasks: List<top.resderx.rac.a2a.Task> = emptyList(),
+    val tasks: List<Task> = emptyList(),
 )
 
 /**
@@ -161,7 +161,7 @@ data class CancelTaskParams(
  */
 @Serializable
 data class CancelTaskResult(
-    val task: top.resderx.rac.a2a.Task,
+    val task: Task,
 )
 
 /**
@@ -178,7 +178,7 @@ data class CancelTaskResult(
 @Serializable
 data class TaskStatusUpdateEvent(
     val id: String,
-    val status: top.resderx.rac.a2a.TaskStatus,
+    val status: TaskStatus,
     val final: Boolean = false,
     val metadata: Map<String, String>? = null,
 )
@@ -198,7 +198,7 @@ data class TaskStatusUpdateEvent(
 @Serializable
 data class TaskArtifactUpdateEvent(
     val id: String,
-    val artifact: top.resderx.rac.a2a.Artifact,
+    val artifact: Artifact,
     val append: Boolean = false,
     val lastChunk: Boolean = false,
     val metadata: Map<String, String>? = null,

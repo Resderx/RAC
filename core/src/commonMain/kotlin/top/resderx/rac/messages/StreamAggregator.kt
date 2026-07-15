@@ -270,7 +270,7 @@ fun Flow<AnthropicStreamEvent>.toAnthropicStreamEvents(): Flow<StreamEvent> = fl
 fun Flow<ResponsesStreamEvent>.toResponsesStreamEvents(): Flow<StreamEvent> = flow {
     val contentBuf = StringBuilder()
     val toolCallList = mutableListOf<ToolCallAccumulator>()
-    var usage: Usage? = null
+    var usage: Usage?
 
     collect { event ->
         when (event) {

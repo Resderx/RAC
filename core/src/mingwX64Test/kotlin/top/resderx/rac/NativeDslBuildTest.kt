@@ -14,29 +14,13 @@
 
 package top.resderx.rac
 
-import top.resderx.rac.dsl.llm
-import top.resderx.rac.dsl.deepseek
-import top.resderx.rac.dsl.openai
-import top.resderx.rac.dsl.ollama
-import top.resderx.rac.dsl.glm
-import top.resderx.rac.dsl.anthropic
-import top.resderx.rac.dsl.kimi
-import top.resderx.rac.dsl.minimax
-import top.resderx.rac.dsl.doubao
-import top.resderx.rac.dsl.qwen
-import top.resderx.rac.dsl.mimo
-import top.resderx.rac.dsl.gemini
+import top.resderx.rac.dsl.*
+import top.resderx.rac.exceptions.RACException
 import top.resderx.rac.providers.ApiType
 import top.resderx.rac.providers.ModelConfig
-import top.resderx.rac.providers.ProviderConfig
 import top.resderx.rac.providers.ProviderRegistry
 import top.resderx.rac.providers.SimpleModelProvider
-import top.resderx.rac.exceptions.RACException
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertTrue
-import kotlin.test.assertFailsWith
-import kotlin.test.assertNull
+import kotlin.test.*
 
 /**
  * mingwX64 原生平台 DSL 构建与供应商注册测试。

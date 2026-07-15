@@ -24,6 +24,7 @@ import kotlinx.serialization.json.jsonObject
 import java.io.BufferedReader
 import java.io.BufferedWriter
 import java.io.File
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Stdio 传输层连接的 JVM 实现，通过 [ProcessBuilder] 启动子进程并经 stdin/stdout 交换 JSON-RPC 消息。
@@ -145,7 +146,7 @@ private class JvmStdioMcpConnection(
             writer.flush()
         }
         // 从 Channel 读取响应，跳过通知与无效行
-        return withTimeout(timeoutMillis) {
+        return withTimeout(timeoutMillis.milliseconds) {
             while (true) {
                 val line = messageChannel.receive()
                 if (line.isBlank()) continue

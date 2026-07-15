@@ -39,7 +39,7 @@ interface A2aClient {
      * @return 发送结果——[top.resderx.rac.a2a.SendMessageResult.TaskResult] 表示异步任务，
      *   [top.resderx.rac.a2a.SendMessageResult.MessageResult] 表示同步直接响应
      */
-    suspend fun sendMessage(params: top.resderx.rac.a2a.SendMessageParams): top.resderx.rac.a2a.SendMessageResult
+    suspend fun sendMessage(params: SendMessageParams): SendMessageResult
 
     /**
      * 发送消息并订阅流式更新（tasks/sendSubscribe）——返回 SSE 事件流。
@@ -51,7 +51,7 @@ interface A2aClient {
      * @param params 发送参数
      * @return 流式事件流
      */
-    fun sendStreamingMessage(params: top.resderx.rac.a2a.SendStreamingMessageParams): Flow<top.resderx.rac.a2a.A2aStreamEvent>
+    fun sendStreamingMessage(params: SendStreamingMessageParams): Flow<A2aStreamEvent>
 
     /**
      * 查询任务当前状态（tasks/get）。
@@ -59,8 +59,8 @@ interface A2aClient {
      * @param params 查询参数（含任务 ID 与可选 historyLength）
      * @return 任务当前完整状态
      */
-    suspend fun getTask(params: top.resderx.rac.a2a.GetTaskParams): top.resderx.rac.a2a.GetTaskResult
-    suspend fun listTasks(params: top.resderx.rac.a2a.ListTasksParams = top.resderx.rac.a2a.ListTasksParams()): top.resderx.rac.a2a.ListTasksResult
+    suspend fun getTask(params: GetTaskParams): GetTaskResult
+    suspend fun listTasks(params: ListTasksParams = ListTasksParams()): ListTasksResult
 
     /**
      * 取消任务（tasks/cancel）。
@@ -68,7 +68,7 @@ interface A2aClient {
      * @param params 取消参数（含任务 ID）
      * @return 取消后的任务状态
      */
-    suspend fun cancelTask(params: top.resderx.rac.a2a.CancelTaskParams): top.resderx.rac.a2a.CancelTaskResult
+    suspend fun cancelTask(params: CancelTaskParams): CancelTaskResult
 
     /**
      * 获取 Agent Card——发现远端 Agent 的能力与端点信息。
@@ -76,7 +76,7 @@ interface A2aClient {
      * @param agentCardUrl Agent Card 的 URL（通常为 `/.well-known/agent.json`）；为空则使用配置默认值
      * @return Agent Card 文档
      */
-    suspend fun getAgentCard(agentCardUrl: String? = null): top.resderx.rac.a2a.AgentCard
+    suspend fun getAgentCard(agentCardUrl: String? = null): AgentCard
 
     /**
      * 关闭客户端，释放底层 HttpClient 等资源。
@@ -99,21 +99,21 @@ sealed interface A2aStreamEvent {
      *
      * @property result 初始结果
      */
-    data class Initial(val result: top.resderx.rac.a2a.SendMessageResult) : A2aStreamEvent
+    data class Initial(val result: SendMessageResult) : A2aStreamEvent
 
     /**
      * 任务状态更新事件。
      *
      * @property event 状态更新
      */
-    data class StatusUpdate(val event: top.resderx.rac.a2a.TaskStatusUpdateEvent) : A2aStreamEvent
+    data class StatusUpdate(val event: TaskStatusUpdateEvent) : A2aStreamEvent
 
     /**
      * 任务产出物更新事件。
      *
      * @property event 产出物更新
      */
-    data class ArtifactUpdate(val event: top.resderx.rac.a2a.TaskArtifactUpdateEvent) : A2aStreamEvent
+    data class ArtifactUpdate(val event: TaskArtifactUpdateEvent) : A2aStreamEvent
 }
 
 /**
@@ -148,5 +148,5 @@ data class A2aClientConfig(
  * @param config 客户端配置
  * @return A2A 客户端实例
  */
-fun A2aClient(config: top.resderx.rac.a2a.A2aClientConfig): top.resderx.rac.a2a.A2aClient =
-    top.resderx.rac.a2a.DefaultA2aClient(config)
+fun A2aClient(config: A2aClientConfig): A2aClient =
+    DefaultA2aClient(config)
