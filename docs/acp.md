@@ -1,18 +1,22 @@
+[English](acp.en.md) | **中文**
+
 # ACP（Agent Client Protocol）支持
 
-RAC 双向支持 [Agent Client Protocol v1](https://agentclientprotocol.com/)——既能作为 Client 调用外部 Agent（Claude Code、Codex CLI、Gemini CLI 等），也能将自身 LLM 调用能力封装为 ACP Agent Server 供 Editor 调用。
+RAC 双向支持 [Agent Client Protocol v1](https://agentclientprotocol.com/)——既能作为 Client 调用外部 Agent（Claude
+Code、Codex CLI、Gemini CLI 等），也能将自身 LLM 调用能力封装为 ACP Agent Server 供 Editor 调用。
 
 ## 概述
 
-ACP 是 Zed 与 JetBrains 联合推出的标准化 AI 编码助手通信协议，基于 JSON-RPC 2.0，定义 Editor（Client）与 Agent 之间的双向通信。与 MCP 的关键差异：
+ACP 是 Zed 与 JetBrains 联合推出的标准化 AI 编码助手通信协议，基于 JSON-RPC 2.0，定义 Editor（Client）与 Agent 之间的双向通信。与
+MCP 的关键差异：
 
-| 维度 | MCP | ACP |
-| --- | --- | --- |
-| 通信方向 | Client → Server 单向请求 | Client ↔ Agent 双向请求 |
-| 定位 | 工具/资源/提示 发现与调用 | 编码助手会话管理 |
-| 核心方法 | `tools/list`、`tools/call`、`resources/*` | `initialize`、`session/new`、`session/prompt`、`session/update` |
-| 流式更新 | 无原生流式 | `session/update` 通知流式推送 |
-| Agent → Client 请求 | 无 | `session/request_permission`（权限请求） |
+| 维度                | MCP                                     | ACP                                                          |
+|-------------------|-----------------------------------------|--------------------------------------------------------------|
+| 通信方向              | Client → Server 单向请求                    | Client ↔ Agent 双向请求                                          |
+| 定位                | 工具/资源/提示 发现与调用                          | 编码助手会话管理                                                     |
+| 核心方法              | `tools/list`、`tools/call`、`resources/*` | `initialize`、`session/new`、`session/prompt`、`session/update` |
+| 流式更新              | 无原生流式                                   | `session/update` 通知流式推送                                      |
+| Agent → Client 请求 | 无                                       | `session/request_permission`（权限请求）                           |
 
 ## 架构
 
@@ -70,12 +74,13 @@ val resp = ai.chatWithAcpAgent(
     when (update) {
         is AgentMessageChunk -> print((update.content as AcpTextBlock).text)
         is ToolCallUpdate -> println("[Tool] ${update.title} — ${update.status}")
-        is PlanUpdate -> update.entries.forEach { println("[Plan] ${it.content}")
-        is UsageUpdate -> println("[Usage] ${update.used}/${update.size} tokens")
-        is UserMessageChunk -> Unit // 历史回放，通常忽略
+        is PlanUpdate -> update.entries.forEach {
+            println("[Plan] ${it.content}")
+            is UsageUpdate -> println("[Usage] ${update.used}/${update.size} tokens")
+            is UserMessageChunk -> Unit // 历史回放，通常忽略
+        }
     }
-}
-client.close()
+    client.close()
 ```
 
 ### 底层 API
@@ -85,7 +90,8 @@ client.close()
 ```kotlin
 client.initialize()                                    // 协议握手
 val session = client.sessionNew(cwd = "/project")      // 创建会话
-val stopReason = client.sessionPrompt(                 // 发起提示轮次
+val stopReason = client.sessionPrompt(
+    // 发起提示轮次
     sessionId = session.sessionId,
     prompt = listOf(AcpTextBlock(text = "Hello")),
     onUpdate = { update -> /* ... */ },
@@ -95,7 +101,8 @@ client.sessionCancel(session.sessionId)                // 取消会话
 
 ### 权限处理
 
-Agent 在执行文件编辑、命令运行等操作时，会通过 `session/request_permission` 向 Client 发起权限请求。通过 `permissionHandler` 配置处理策略：
+Agent 在执行文件编辑、命令运行等操作时，会通过 `session/request_permission` 向 Client 发起权限请求。通过
+`permissionHandler` 配置处理策略：
 
 ```kotlin
 val client = AcpClient(
@@ -134,6 +141,7 @@ server.close()
 ```
 
 `RacAcpAgent` 适配器内部（文件 `RacAcpAgent.kt`）：
+
 1. `sessionPrompt` 收到用户提示后，将 `AcpContentBlock` 列表转为文本
 2. 调用 `Llm.chat` 执行 LLM 推理
 3. 通过 `AcpAgentContext.sendUpdate` 推送 `AgentMessageChunk`（含 LLM 响应内容）
@@ -162,28 +170,38 @@ class MyAgentHandler : AcpAgentHandler {
         context: AcpAgentContext,
     ): SessionPromptResult {
         // 推送计划
-        context.sendUpdate(PlanUpdate(entries = listOf(
-            PlanEntry(content = "分析代码", priority = "high", status = "in_progress"),
-        )))
+        context.sendUpdate(
+            PlanUpdate(
+                entries = listOf(
+                    PlanEntry(content = "分析代码", priority = "high", status = "in_progress"),
+                )
+            )
+        )
         // 推送消息
-        context.sendUpdate(AgentMessageChunk(
-            messageId = "msg-1",
-            content = AcpTextBlock(text = "正在分析..."),
-        ))
+        context.sendUpdate(
+            AgentMessageChunk(
+                messageId = "msg-1",
+                content = AcpTextBlock(text = "正在分析..."),
+            )
+        )
         // 请求权限
-        val outcome = context.requestPermission(PermissionRequest(
-            type = "execute",
-            title = "运行测试",
-            options = listOf(
-                PermissionOption(id = "allow", title = "允许"),
-                PermissionOption(id = "deny", title = "拒绝"),
-            ),
-        ))
+        val outcome = context.requestPermission(
+            PermissionRequest(
+                type = "execute",
+                title = "运行测试",
+                options = listOf(
+                    PermissionOption(id = "allow", title = "允许"),
+                    PermissionOption(id = "deny", title = "拒绝"),
+                ),
+            )
+        )
         return SessionPromptResult(stopReason = StopReason.END_TURN)
     }
 
-    override suspend fun sessionCancel(sessionId: String) { /* 取消处理 */ }
-    override suspend fun close() { /* 释放资源 */ }
+    override suspend fun sessionCancel(sessionId: String) { /* 取消处理 */
+    }
+    override suspend fun close() { /* 释放资源 */
+    }
 }
 
 val server = AcpAgentServer(MyAgentHandler())
@@ -208,47 +226,47 @@ server.start().join()
 
 ### Client → Agent 请求
 
-| 方法 | 说明 | RAC Client 方法 |
-| --- | --- | --- |
-| `initialize` | 协议握手，协商版本与能力 | `client.initialize()` |
-| `session/new` | 创建新会话 | `client.sessionNew(cwd)` |
-| `session/load` | 加载历史会话 | `client.sessionLoad(sessionId, cwd)` |
-| `session/prompt` | 发起提示轮次 | `client.sessionPrompt(sessionId, prompt, onUpdate)` |
-| `session/cancel` | 取消进行中的轮次 | `client.sessionCancel(sessionId)` |
+| 方法               | 说明           | RAC Client 方法                                       |
+|------------------|--------------|-----------------------------------------------------|
+| `initialize`     | 协议握手，协商版本与能力 | `client.initialize()`                               |
+| `session/new`    | 创建新会话        | `client.sessionNew(cwd)`                            |
+| `session/load`   | 加载历史会话       | `client.sessionLoad(sessionId, cwd)`                |
+| `session/prompt` | 发起提示轮次       | `client.sessionPrompt(sessionId, prompt, onUpdate)` |
+| `session/cancel` | 取消进行中的轮次     | `client.sessionCancel(sessionId)`                   |
 
 ### Agent → Client 请求
 
-| 方法 | 说明 | 处理方式 |
-| --- | --- | --- |
+| 方法                           | 说明            | 处理方式                                |
+|------------------------------|---------------|-------------------------------------|
 | `session/request_permission` | 请求文件编辑/命令执行权限 | `AcpClientConfig.permissionHandler` |
 
 ### Agent → Client 通知
 
-| 方法 | 说明 | 回调 |
-| --- | --- | --- |
+| 方法               | 说明                     | 回调                              |
+|------------------|------------------------|---------------------------------|
 | `session/update` | 推送会话更新（消息块/工具调用/计划/用量） | `sessionPrompt` 的 `onUpdate` 参数 |
 
 ### SessionUpdate 子类型
 
-| `@SerialName` | 类型 | 说明 |
-| --- | --- | --- |
-| `agent_message_chunk` | `AgentMessageChunk` | Agent 增量消息 |
-| `user_message_chunk` | `UserMessageChunk` | 用户消息（历史回放） |
-| `plan` | `PlanUpdate` | Agent 工作计划 |
-| `tool_call` | `ToolCallUpdate` | 工具调用状态更新 |
-| `usage_update` | `UsageUpdate` | Token 用量与成本 |
+| `@SerialName`         | 类型                  | 说明          |
+|-----------------------|---------------------|-------------|
+| `agent_message_chunk` | `AgentMessageChunk` | Agent 增量消息  |
+| `user_message_chunk`  | `UserMessageChunk`  | 用户消息（历史回放）  |
+| `plan`                | `PlanUpdate`        | Agent 工作计划  |
+| `tool_call`           | `ToolCallUpdate`    | 工具调用状态更新    |
+| `usage_update`        | `UsageUpdate`       | Token 用量与成本 |
 
 ## StopReason 映射
 
 ACP `StopReason` 与 RAC `FinishReason` 的映射关系（`FinishReason` 定义在 rac-core 的 `messages/` 包中）：
 
-| ACP StopReason | RAC FinishReason | 说明 |
-| --- | --- | --- |
-| `end_turn` | `STOP` | Agent 正常结束 |
-| `max_tokens` | `LENGTH` | 达到 token 上限 |
-| `max_turn_requests` | `LENGTH` | 达到轮次上限 |
-| `refusal` | `CONTENT_FILTER` | Agent 拒绝 |
-| `cancelled` | `STOP` | 用户取消 |
+| ACP StopReason      | RAC FinishReason | 说明          |
+|---------------------|------------------|-------------|
+| `end_turn`          | `STOP`           | Agent 正常结束  |
+| `max_tokens`        | `LENGTH`         | 达到 token 上限 |
+| `max_turn_requests` | `LENGTH`         | 达到轮次上限      |
+| `refusal`           | `CONTENT_FILTER` | Agent 拒绝    |
+| `cancelled`         | `STOP`           | 用户取消        |
 
 ## 测试
 

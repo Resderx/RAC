@@ -1,49 +1,52 @@
+[English](usage.en.md) | **中文**
+
 # API 参考
 
-本文档是 RAC 库每个公开函数、类、属性的完整签名参考。按功能模块组织，每条 API 含签名、参数说明与使用示例。刚接触 RAC 建议先阅读 [入门指南](quickstart.md)。
+本文档是 RAC 库每个公开函数、类、属性的完整签名参考。按功能模块组织，每条 API 含签名、参数说明与使用示例。刚接触 RAC
+建议先阅读 [入门指南](quickstart.md)。
 
 ## 目录
 
 - [1. DSL 入口](#1-dsl-入口)
-  - [1.1 llm { }](#11-llm--)
-  - [1.2 LlmBuilder](#12-llmbuilder)
-  - [1.3 RetryPolicy](#13-retrypolicy)
+    - [1.1 llm { }](#11-llm--)
+    - [1.2 LlmBuilder](#12-llmbuilder)
+    - [1.3 RetryPolicy](#13-retrypolicy)
 - [2. 供应商 DSL](#2-供应商-dsl)
-  - [2.1 providers { } 与供应商扩展函数](#21-providers--与供应商扩展函数)
-  - [2.2 ProviderDsl](#22-providerdsl)
+    - [2.1 providers { } 与供应商扩展函数](#21-providers--与供应商扩展函数)
+    - [2.2 ProviderDsl](#22-providerdsl)
 - [3. 模型注册](#3-模型注册)
-  - [3.1 ModelsBuilder.model()](#31-modelsbuildermodel)
-  - [3.2 ModelBuilder](#32-modelbuilder)
-  - [3.3 ModelConfig](#33-modelconfig)
+    - [3.1 ModelsBuilder.model()](#31-modelsbuildermodel)
+    - [3.2 ModelBuilder](#32-modelbuilder)
+    - [3.3 ModelConfig](#33-modelconfig)
 - [4. 模型预设枚举](#4-模型预设枚举)
-  - [4.1 ModelPreset 接口](#41-modelpreset-接口)
-  - [4.2 10 个供应商枚举](#42-10-个供应商枚举)
+    - [4.1 ModelPreset 接口](#41-modelpreset-接口)
+    - [4.2 10 个供应商枚举](#42-10-个供应商枚举)
 - [5. Llm 类](#5-llm-类)
-  - [5.1 chat { }](#51-chat--)
-  - [5.2 chatWithTools { }](#52-chatwithtools--)
-  - [5.3 chatStream { }](#53-chatstream--)
-  - [5.4 anthropicStream { }](#54-anthropicstream--)
-  - [5.5 respond { }](#55-respond--)
-  - [5.6 respondStream { }](#56-respondstream--)
-  - [5.7 provider()](#57-provider)
+    - [5.1 chat { }](#51-chat--)
+    - [5.2 chatWithTools { }](#52-chatwithtools--)
+    - [5.3 chatStream { }](#53-chatstream--)
+    - [5.4 anthropicStream { }](#54-anthropicstream--)
+    - [5.5 respond { }](#55-respond--)
+    - [5.6 respondStream { }](#56-respondstream--)
+    - [5.7 provider()](#57-provider)
 - [6. ChatRequestBuilder（chat { } 块内）](#6-chatrequestbuilderchat--块内)
 - [7. RespondRequestBuilder（respond { } 块内）](#7-respondrequestbuilderrespond--块内)
 - [8. Agent API](#8-agent-api)
-  - [8.1 agent { }](#81-agent--)
-  - [8.2 AgentBuilder](#82-agentbuilder)
-  - [8.3 Agent 类](#83-agent-类)
-  - [8.4 Session 类](#84-session-类)
+    - [8.1 agent { }](#81-agent--)
+    - [8.2 AgentBuilder](#82-agentbuilder)
+    - [8.3 Agent 类](#83-agent-类)
+    - [8.4 Session 类](#84-session-类)
 - [9. 工具定义](#9-工具定义)
-  - [9.1 tool<Args>() 强类型模式](#91-toolargs-强类型模式)
-  - [9.2 tool() 散开参数模式](#92-tool-散开参数模式)
-  - [9.3 param()](#93-param)
-  - [9.4 execute() arity 重载](#94-execute-arity-重载)
+    - [9.1 tool<Args>() 强类型模式](#91-toolargs-强类型模式)
+    - [9.2 tool() 散开参数模式](#92-tool-散开参数模式)
+    - [9.3 param()](#93-param)
+    - [9.4 execute() arity 重载](#94-execute-arity-重载)
 - [10. 消息类型](#10-消息类型)
-  - [10.1 Message 密封接口](#101-message-密封接口)
-  - [10.2 Content 密封接口](#102-content-密封接口)
-  - [10.3 AIMessage](#103-aimessage)
-  - [10.4 ToolCall / ToolDefinition](#104-toolcall--tooldefinition)
-  - [10.5 Usage / FinishReason](#105-usage--finishreason)
+    - [10.1 Message 密封接口](#101-message-密封接口)
+    - [10.2 Content 密封接口](#102-content-密封接口)
+    - [10.3 AIMessage](#103-aimessage)
+    - [10.4 ToolCall / ToolDefinition](#104-toolcall--tooldefinition)
+    - [10.5 Usage / FinishReason](#105-usage--finishreason)
 - [11. StreamEvent](#11-streamevent)
 - [12. MCP 扩展](#12-mcp-扩展)
 - [13. ACP 扩展](#13-acp-扩展)
@@ -65,6 +68,7 @@ inline fun llm(block: LlmBuilder.() -> Unit): Llm
 ```
 
 **参数**：
+
 - `block: LlmBuilder.() -> Unit` — 配置块，在 `LlmBuilder` 作用域内注册供应商等
 
 **返回**：构建完成的 `Llm` 实例
@@ -104,18 +108,18 @@ class LlmBuilder {
 
 **属性**：
 
-| 属性 | 类型 | 默认 | 说明 |
-| --- | --- | --- | --- |
-| `defaultProviderName` | `String?` | null | 默认供应商名称，覆盖"首个注册即默认"规则 |
-| `timeoutMillis` | `Long?` | null | HttpClient 超时毫秒数，null 使用默认 60s |
-| `retryPolicy` | `RetryPolicy?` | null | 重试策略，null 使用默认 `RetryPolicy()` |
+| 属性                    | 类型             | 默认   | 说明                             |
+|-----------------------|----------------|------|--------------------------------|
+| `defaultProviderName` | `String?`      | null | 默认供应商名称，覆盖"首个注册即默认"规则          |
+| `timeoutMillis`       | `Long?`        | null | HttpClient 超时毫秒数，null 使用默认 60s |
+| `retryPolicy`         | `RetryPolicy?` | null | 重试策略，null 使用默认 `RetryPolicy()` |
 
 **方法**：
 
-| 方法 | 说明 |
-| --- | --- |
-| `fun providers(block: ProvidersBuilder.() -> Unit)` | providers 块入口，在 lambda 内逐个注册供应商 |
-| `fun build(): Llm` | 构建不可变的 `Llm` 实例（通常由 `llm { }` 自动调用） |
+| 方法                                                  | 说明                                  |
+|-----------------------------------------------------|-------------------------------------|
+| `fun providers(block: ProvidersBuilder.() -> Unit)` | providers 块入口，在 lambda 内逐个注册供应商     |
+| `fun build(): Llm`                                  | 构建不可变的 `Llm` 实例（通常由 `llm { }` 自动调用） |
 
 ### 1.3 RetryPolicy
 
@@ -137,13 +141,13 @@ data class RetryPolicy(
 
 **属性**：
 
-| 属性 | 默认 | 说明 |
-| --- | --- | --- |
-| `maxRetries` | 3 | 最大重试次数（不含首次请求） |
-| `initialDelayMillis` | 1000 | 首次重试延迟毫秒 |
-| `maxDelayMillis` | 30000 | 最大重试延迟毫秒 |
-| `backoffMultiplier` | 2.0 | 指数退避倍数 |
-| `retryableStatusCodes` | 408/429/500/502/503/504 | 可重试的 HTTP 状态码 |
+| 属性                     | 默认                      | 说明             |
+|------------------------|-------------------------|----------------|
+| `maxRetries`           | 3                       | 最大重试次数（不含首次请求） |
+| `initialDelayMillis`   | 1000                    | 首次重试延迟毫秒       |
+| `maxDelayMillis`       | 30000                   | 最大重试延迟毫秒       |
+| `backoffMultiplier`    | 2.0                     | 指数退避倍数         |
+| `retryableStatusCodes` | 408/429/500/502/503/504 | 可重试的 HTTP 状态码  |
 
 **示例**：
 
@@ -178,7 +182,8 @@ fun ProvidersBuilder.mimo(block: ProviderDsl.() -> Unit)
 fun ProvidersBuilder.ollama(block: ProviderDsl.() -> Unit)
 ```
 
-**说明**：每个扩展函数在 `ProviderDsl` 作用域内配置该供应商的连接信息与模型。首个注册的供应商自动成为默认供应商（可用 `defaultProviderName` 覆盖）。
+**说明**：每个扩展函数在 `ProviderDsl` 作用域内配置该供应商的连接信息与模型。首个注册的供应商自动成为默认供应商（可用
+`defaultProviderName` 覆盖）。
 
 **示例**：
 
@@ -217,13 +222,13 @@ class ProviderDsl {
 
 **方法**：
 
-| 方法 | 说明 |
-| --- | --- |
-| `fun apiKey(key: String?)` | 设置 API 密钥，传 null 沿用供应商默认 |
-| `fun baseUrl(url: String?)` | 设置 baseUrl，覆盖供应商默认 |
-| `fun header(name, value)` | 追加单个额外请求头 |
-| `fun headers(headers)` | 批量追加额外请求头 |
-| `fun models(block)` | models 块入口，在 lambda 内逐个注册模型 |
+| 方法                          | 说明                          |
+|-----------------------------|-----------------------------|
+| `fun apiKey(key: String?)`  | 设置 API 密钥，传 null 沿用供应商默认    |
+| `fun baseUrl(url: String?)` | 设置 baseUrl，覆盖供应商默认          |
+| `fun header(name, value)`   | 追加单个额外请求头                   |
+| `fun headers(headers)`      | 批量追加额外请求头                   |
+| `fun models(block)`         | models 块入口，在 lambda 内逐个注册模型 |
 
 ---
 
@@ -290,22 +295,23 @@ class ModelBuilder {
 
     internal constructor(initial: ModelConfig)  // 从预设初始化
     internal constructor()
+
     internal fun build(): ModelConfig
 }
 ```
 
 **属性**：
 
-| 属性 | 类型 | 说明 |
-| --- | --- | --- |
-| `maxTokens` | `Long?` | 最大生成 token 数 |
-| `temperature` | `Double?` | 采样温度 |
-| `topP` | `Double?` | nucleus sampling 参数 |
-| `systemPrompt` | `String?` | 模型专属系统提示词（调用时可在 `chat { system() }` 覆盖） |
-| `reasoningEffort` | `String?` | 推理强度（`"low"` / `"medium"` / `"high"`），仅推理模型支持 |
-| `stop` | `List<String>?` | 停止序列 |
-| `seed` | `Long?` | 随机种子 |
-| `enableThinking` | `Boolean?` | 思考开关，true 启用扩展思考 |
+| 属性                | 类型              | 说明                                            |
+|-------------------|-----------------|-----------------------------------------------|
+| `maxTokens`       | `Long?`         | 最大生成 token 数                                  |
+| `temperature`     | `Double?`       | 采样温度                                          |
+| `topP`            | `Double?`       | nucleus sampling 参数                           |
+| `systemPrompt`    | `String?`       | 模型专属系统提示词（调用时可在 `chat { system() }` 覆盖）       |
+| `reasoningEffort` | `String?`       | 推理强度（`"low"` / `"medium"` / `"high"`），仅推理模型支持 |
+| `stop`            | `List<String>?` | 停止序列                                          |
+| `seed`            | `Long?`         | 随机种子                                          |
+| `enableThinking`  | `Boolean?`      | 思考开关，true 启用扩展思考                              |
 
 ### 3.3 ModelConfig
 
@@ -346,6 +352,7 @@ interface ModelPreset {
 ```
 
 **属性**：
+
 - `modelName: String` — 模型标识符，与 API 请求体 `model` 字段对应
 - `recommendedConfig: ModelConfig` — 推荐的模型配置，含针对该模型特性调优过的参数
 
@@ -355,94 +362,94 @@ interface ModelPreset {
 
 #### DeepSeekModel（2 个）
 
-| 枚举项 | modelName | 推荐配置 |
-| --- | --- | --- |
-| `V4_PRO` | `deepseek-v4-pro` | maxTokens=8192, temperature=0.0, reasoningEffort="high", enableThinking=true |
-| `V4_FLASH` | `deepseek-v4-flash` | maxTokens=8192, temperature=0.0, reasoningEffort="medium" |
+| 枚举项        | modelName           | 推荐配置                                                                         |
+|------------|---------------------|------------------------------------------------------------------------------|
+| `V4_PRO`   | `deepseek-v4-pro`   | maxTokens=8192, temperature=0.0, reasoningEffort="high", enableThinking=true |
+| `V4_FLASH` | `deepseek-v4-flash` | maxTokens=8192, temperature=0.0, reasoningEffort="medium"                    |
 
 #### OpenAIModel（4 个）
 
-| 枚举项 | modelName | 推荐配置 |
-| --- | --- | --- |
-| `GPT_5_5` | `gpt-5.5` | maxTokens=16384, temperature=0.7, reasoningEffort="high", enableThinking=true |
-| `GPT_5_4` | `gpt-5.4` | maxTokens=16384, temperature=0.7, reasoningEffort="high", enableThinking=true |
-| `GPT_5_4_MINI` | `gpt-5.4-mini` | maxTokens=8192, temperature=0.7 |
-| `GPT_5_4_NANO` | `gpt-5.4-nano` | maxTokens=4096, temperature=0.7 |
+| 枚举项            | modelName      | 推荐配置                                                                          |
+|----------------|----------------|-------------------------------------------------------------------------------|
+| `GPT_5_5`      | `gpt-5.5`      | maxTokens=16384, temperature=0.7, reasoningEffort="high", enableThinking=true |
+| `GPT_5_4`      | `gpt-5.4`      | maxTokens=16384, temperature=0.7, reasoningEffort="high", enableThinking=true |
+| `GPT_5_4_MINI` | `gpt-5.4-mini` | maxTokens=8192, temperature=0.7                                               |
+| `GPT_5_4_NANO` | `gpt-5.4-nano` | maxTokens=4096, temperature=0.7                                               |
 
 #### AnthropicModel（4 个）
 
-| 枚举项 | modelName | 推荐配置 |
-| --- | --- | --- |
-| `CLAUDE_OPUS_4_1` | `claude-opus-4-1` | maxTokens=16384, temperature=0.0, enableThinking=true |
-| `CLAUDE_SONNET_4_6` | `claude-sonnet-4-6` | maxTokens=8192, temperature=0.0, enableThinking=true |
-| `CLAUDE_OPUS_4` | `claude-opus-4-20250514` | maxTokens=8192, temperature=0.0 |
-| `CLAUDE_SONNET_4` | `claude-sonnet-4-20250514` | maxTokens=8192, temperature=0.0 |
+| 枚举项                 | modelName                  | 推荐配置                                                  |
+|---------------------|----------------------------|-------------------------------------------------------|
+| `CLAUDE_OPUS_4_1`   | `claude-opus-4-1`          | maxTokens=16384, temperature=0.0, enableThinking=true |
+| `CLAUDE_SONNET_4_6` | `claude-sonnet-4-6`        | maxTokens=8192, temperature=0.0, enableThinking=true  |
+| `CLAUDE_OPUS_4`     | `claude-opus-4-20250514`   | maxTokens=8192, temperature=0.0                       |
+| `CLAUDE_SONNET_4`   | `claude-sonnet-4-20250514` | maxTokens=8192, temperature=0.0                       |
 
 #### GeminiModel（2 个）
 
-| 枚举项 | modelName | 推荐配置 |
-| --- | --- | --- |
-| `PRO_3` | `gemini-3-pro` | maxTokens=8192, temperature=0.7, reasoningEffort="high", enableThinking=true |
-| `FLASH_3` | `gemini-3-flash` | maxTokens=8192, temperature=0.7 |
+| 枚举项       | modelName        | 推荐配置                                                                         |
+|-----------|------------------|------------------------------------------------------------------------------|
+| `PRO_3`   | `gemini-3-pro`   | maxTokens=8192, temperature=0.7, reasoningEffort="high", enableThinking=true |
+| `FLASH_3` | `gemini-3-flash` | maxTokens=8192, temperature=0.7                                              |
 
 #### QwenModel（6 个）
 
-| 枚举项 | modelName | 推荐配置 |
-| --- | --- | --- |
-| `MAX_3_7` | `qwen3.7-max-preview` | maxTokens=8192, temperature=0.7, reasoningEffort="high", enableThinking=true |
-| `PLUS_3_7` | `qwen3.7-plus-preview` | maxTokens=8192, temperature=0.7 |
-| `MAX_3_6` | `qwen3.6-max-preview` | maxTokens=8192, temperature=0.7, reasoningEffort="high", enableThinking=true |
-| `PLUS_3_6` | `qwen3.6-plus` | maxTokens=8192, temperature=0.7 |
-| `FLASH_3_6` | `qwen3.6-flash` | maxTokens=4096, temperature=0.7 |
-| `MAX_FLASH` | `qwen-max-flash` | maxTokens=4096, temperature=0.7 |
+| 枚举项         | modelName              | 推荐配置                                                                         |
+|-------------|------------------------|------------------------------------------------------------------------------|
+| `MAX_3_7`   | `qwen3.7-max-preview`  | maxTokens=8192, temperature=0.7, reasoningEffort="high", enableThinking=true |
+| `PLUS_3_7`  | `qwen3.7-plus-preview` | maxTokens=8192, temperature=0.7                                              |
+| `MAX_3_6`   | `qwen3.6-max-preview`  | maxTokens=8192, temperature=0.7, reasoningEffort="high", enableThinking=true |
+| `PLUS_3_6`  | `qwen3.6-plus`         | maxTokens=8192, temperature=0.7                                              |
+| `FLASH_3_6` | `qwen3.6-flash`        | maxTokens=4096, temperature=0.7                                              |
+| `MAX_FLASH` | `qwen-max-flash`       | maxTokens=4096, temperature=0.7                                              |
 
 #### GlmModel（4 个）
 
-| 枚举项 | modelName | 推荐配置 |
-| --- | --- | --- |
-| `GLM_5_2` | `glm-5.2` | maxTokens=8192, temperature=0.7, reasoningEffort="high", enableThinking=true |
-| `GLM_5_1` | `glm-5.1` | maxTokens=8192, temperature=0.7 |
-| `GLM_5` | `glm-5` | maxTokens=8192, temperature=0.7 |
-| `GLM_4_7_FLASH` | `glm-4.7-flash` | maxTokens=4096, temperature=0.7 |
+| 枚举项             | modelName       | 推荐配置                                                                         |
+|-----------------|-----------------|------------------------------------------------------------------------------|
+| `GLM_5_2`       | `glm-5.2`       | maxTokens=8192, temperature=0.7, reasoningEffort="high", enableThinking=true |
+| `GLM_5_1`       | `glm-5.1`       | maxTokens=8192, temperature=0.7                                              |
+| `GLM_5`         | `glm-5`         | maxTokens=8192, temperature=0.7                                              |
+| `GLM_4_7_FLASH` | `glm-4.7-flash` | maxTokens=4096, temperature=0.7                                              |
 
 #### KimiModel（9 个）
 
-| 枚举项 | modelName | 推荐配置 |
-| --- | --- | --- |
-| `K2_5` | `kimi-k2.5` | maxTokens=8192, temperature=0.7 |
-| `K2_0905` | `kimi-k2-0905-preview` | maxTokens=8192, temperature=0.7 |
-| `K2_0711` | `kimi-k2-0711-preview` | maxTokens=8192, temperature=0.7 |
-| `K2_TURBO` | `kimi-k2-turbo-preview` | maxTokens=8192, temperature=0.7 |
-| `K2_THINKING` | `kimi-k2-thinking` | maxTokens=8192, temperature=0.0, reasoningEffort="high", enableThinking=true |
+| 枚举项                 | modelName                | 推荐配置                                                                           |
+|---------------------|--------------------------|--------------------------------------------------------------------------------|
+| `K2_5`              | `kimi-k2.5`              | maxTokens=8192, temperature=0.7                                                |
+| `K2_0905`           | `kimi-k2-0905-preview`   | maxTokens=8192, temperature=0.7                                                |
+| `K2_0711`           | `kimi-k2-0711-preview`   | maxTokens=8192, temperature=0.7                                                |
+| `K2_TURBO`          | `kimi-k2-turbo-preview`  | maxTokens=8192, temperature=0.7                                                |
+| `K2_THINKING`       | `kimi-k2-thinking`       | maxTokens=8192, temperature=0.0, reasoningEffort="high", enableThinking=true   |
 | `K2_THINKING_TURBO` | `kimi-k2-thinking-turbo` | maxTokens=8192, temperature=0.0, reasoningEffort="medium", enableThinking=true |
-| `V1_8K` | `moonshot-v1-8k` | maxTokens=8000, temperature=0.7 |
-| `V1_32K` | `moonshot-v1-32k` | maxTokens=32000, temperature=0.7 |
-| `V1_128K` | `moonshot-v1-128k` | maxTokens=128000, temperature=0.7 |
+| `V1_8K`             | `moonshot-v1-8k`         | maxTokens=8000, temperature=0.7                                                |
+| `V1_32K`            | `moonshot-v1-32k`        | maxTokens=32000, temperature=0.7                                               |
+| `V1_128K`           | `moonshot-v1-128k`       | maxTokens=128000, temperature=0.7                                              |
 
 #### DoubaoModel（5 个）
 
-| 枚举项 | modelName | 推荐配置 |
-| --- | --- | --- |
-| `SEED_2_1_PRO` | `doubao-seed-2.1-pro` | maxTokens=8192, temperature=0.7, reasoningEffort="high", enableThinking=true |
-| `SEED_1_6` | `doubao-seed-1.6` | maxTokens=8192, temperature=0.7 |
-| `SEED_1_6_FLASH` | `doubao-seed-1.6-flash` | maxTokens=4096, temperature=0.7 |
+| 枚举项                 | modelName                  | 推荐配置                                                                         |
+|---------------------|----------------------------|------------------------------------------------------------------------------|
+| `SEED_2_1_PRO`      | `doubao-seed-2.1-pro`      | maxTokens=8192, temperature=0.7, reasoningEffort="high", enableThinking=true |
+| `SEED_1_6`          | `doubao-seed-1.6`          | maxTokens=8192, temperature=0.7                                              |
+| `SEED_1_6_FLASH`    | `doubao-seed-1.6-flash`    | maxTokens=4096, temperature=0.7                                              |
 | `SEED_1_6_THINKING` | `doubao-seed-1.6-thinking` | maxTokens=8192, temperature=0.0, reasoningEffort="high", enableThinking=true |
-| `SEED_1_6_VISION` | `doubao-seed-1.6-vision` | maxTokens=8192, temperature=0.7 |
+| `SEED_1_6_VISION`   | `doubao-seed-1.6-vision`   | maxTokens=8192, temperature=0.7                                              |
 
 #### MinimaxModel（3 个）
 
-| 枚举项 | modelName | 推荐配置 |
-| --- | --- | --- |
-| `ABAB7` | `abab7` | maxTokens=8192, temperature=0.7 |
-| `M2_5` | `MiniMax-M2.5` | maxTokens=8192, temperature=0.7, reasoningEffort="high", enableThinking=true |
-| `M2` | `MiniMax-M2` | maxTokens=8192, temperature=0.7 |
+| 枚举项     | modelName      | 推荐配置                                                                         |
+|---------|----------------|------------------------------------------------------------------------------|
+| `ABAB7` | `abab7`        | maxTokens=8192, temperature=0.7                                              |
+| `M2_5`  | `MiniMax-M2.5` | maxTokens=8192, temperature=0.7, reasoningEffort="high", enableThinking=true |
+| `M2`    | `MiniMax-M2`   | maxTokens=8192, temperature=0.7                                              |
 
 #### MimoModel（2 个）
 
-| 枚举项 | modelName | 推荐配置 |
-| --- | --- | --- |
+| 枚举项        | modelName       | 推荐配置                                                                         |
+|------------|-----------------|------------------------------------------------------------------------------|
 | `V2_5_PRO` | `MiMo-V2.5-Pro` | maxTokens=8192, temperature=0.7, reasoningEffort="high", enableThinking=true |
-| `V2_FLASH` | `MiMo-V2-Flash` | maxTokens=4096, temperature=0.7 |
+| `V2_FLASH` | `MiMo-V2-Flash` | maxTokens=4096, temperature=0.7                                              |
 
 **使用示例**：
 
@@ -513,6 +520,7 @@ suspend fun chatWithTools(
 ```
 
 **参数**：
+
 - `maxRounds: Int = 10` — 最大工具调用循环轮数，需 > 0，否则抛 `IllegalArgumentException`
 - `toolExecutor: suspend (ToolCall) -> String` — 工具执行回调，接收 `ToolCall`，返回执行结果字符串
 - `block: ChatRequestBuilder.() -> Unit` — 请求构建块（需在 `tools { }` 内声明工具）
@@ -653,37 +661,37 @@ class ChatRequestBuilder {
 
 **方法**：
 
-| 方法 | 说明 |
-| --- | --- |
-| `fun provider(name: String)` | 运行时切换到指定 provider |
-| `fun model(name: String)` | 运行时切换到指定 model |
-| `fun system(text: String)` | 添加系统消息 |
-| `fun user(text: String)` | 添加纯文本用户消息 |
+| 方法                                               | 说明                                |
+|--------------------------------------------------|-----------------------------------|
+| `fun provider(name: String)`                     | 运行时切换到指定 provider                 |
+| `fun model(name: String)`                        | 运行时切换到指定 model                    |
+| `fun system(text: String)`                       | 添加系统消息                            |
+| `fun user(text: String)`                         | 添加纯文本用户消息                         |
 | `fun user(block: UserContentBuilder.() -> Unit)` | 添加用户消息（内容由 UserContentBuilder 构建） |
-| `fun assistant(text: String)` | 添加助手消息 |
-| `fun tool(id: String, content: String)` | 添加工具回执消息（id 为 ToolCall.id） |
-| `fun tools(block: ToolsBuilder.() -> Unit)` | 声明可用工具集 |
-| `fun addTools(tools: List<ToolDefinition>)` | 追加一组工具定义（用于 MCP 工具自动注入） |
+| `fun assistant(text: String)`                    | 添加助手消息                            |
+| `fun tool(id: String, content: String)`          | 添加工具回执消息（id 为 ToolCall.id）        |
+| `fun tools(block: ToolsBuilder.() -> Unit)`      | 声明可用工具集                           |
+| `fun addTools(tools: List<ToolDefinition>)`      | 追加一组工具定义（用于 MCP 工具自动注入）           |
 
 **var 字段**（覆盖 ModelConfig 默认值，null 表示沿用）：
 
-| 字段 | 类型 | 说明 |
-| --- | --- | --- |
-| `temperature` | `Double?` | 采样温度 |
-| `topP` | `Double?` | nucleus sampling 参数 |
-| `maxTokens` | `Long?` | 最大生成 token 数 |
-| `reasoningEffort` | `String?` | 推理强度 |
-| `stop` | `List<String>?` | 停止序列 |
-| `seed` | `Long?` | 随机种子 |
-| `enableThinking` | `Boolean?` | 思考开关（详见 [enableThinking 行为](#enablethinking-行为)） |
+| 字段                | 类型              | 说明                                               |
+|-------------------|-----------------|--------------------------------------------------|
+| `temperature`     | `Double?`       | 采样温度                                             |
+| `topP`            | `Double?`       | nucleus sampling 参数                              |
+| `maxTokens`       | `Long?`         | 最大生成 token 数                                     |
+| `reasoningEffort` | `String?`       | 推理强度                                             |
+| `stop`            | `List<String>?` | 停止序列                                             |
+| `seed`            | `Long?`         | 随机种子                                             |
+| `enableThinking`  | `Boolean?`      | 思考开关（详见 [enableThinking 行为](#enablethinking-行为)） |
 
 #### `enableThinking` 行为
 
-| API | enableThinking=true | enableThinking=false | null |
-| --- | --- | --- | --- |
-| Completions | 自动设 `reasoningEffort="medium"`（未显式设置时） | 强制 `reasoningEffort=null` | 不干预 |
-| Anthropic | 构造 `thinking={type:"enabled", budget_tokens:maxTokens*4/5}` | 不发送 thinking 字段 | 不发送 |
-| Responses | 静默忽略 | 静默忽略 | 不干预 |
+| API         | enableThinking=true                                         | enableThinking=false      | null |
+|-------------|-------------------------------------------------------------|---------------------------|------|
+| Completions | 自动设 `reasoningEffort="medium"`（未显式设置时）                      | 强制 `reasoningEffort=null` | 不干预  |
+| Anthropic   | 构造 `thinking={type:"enabled", budget_tokens:maxTokens*4/5}` | 不发送 thinking 字段           | 不发送  |
+| Responses   | 静默忽略                                                        | 静默忽略                      | 不干预  |
 
 **完整示例**：
 
@@ -724,12 +732,12 @@ class RespondRequestBuilder {
 
 **属性**：
 
-| 属性 | 类型 | 说明 |
-| --- | --- | --- |
-| `input` | `String` | 用户输入文本 |
-| `instructions` | `String?` | 系统指令 |
-| `temperature` | `Double?` | 采样温度 |
-| `maxOutputTokens` | `Long?` | 最大输出 token 数 |
+| 属性                | 类型        | 说明           |
+|-------------------|-----------|--------------|
+| `input`           | `String`  | 用户输入文本       |
+| `instructions`    | `String?` | 系统指令         |
+| `temperature`     | `Double?` | 采样温度         |
+| `maxOutputTokens` | `Long?`   | 最大输出 token 数 |
 
 **示例**：
 
@@ -757,6 +765,7 @@ inline fun agent(llm: Llm, block: AgentBuilder.() -> Unit): Agent
 ```
 
 **参数**：
+
 - `llm: Llm` — 底层 LLM 调用入口
 - `block: AgentBuilder.() -> Unit` — 配置块
 
@@ -778,11 +787,11 @@ class AgentBuilder(val llm: Llm) {
 
 **方法**：
 
-| 方法 | 说明 |
-| --- | --- |
-| `fun prompts(text: String)` | 设置系统提示词（用 `prompts` 而非 `system`，与底层 SystemMessage 解耦） |
-| `inline fun tools(block: ToolsScope.() -> Unit)` | 声明工具集 |
-| `fun maxRounds(n: Int)` | 设置最大工具调用循环轮数（需 > 0，否则抛 `IllegalArgumentException`） |
+| 方法                                               | 说明                                                    |
+|--------------------------------------------------|-------------------------------------------------------|
+| `fun prompts(text: String)`                      | 设置系统提示词（用 `prompts` 而非 `system`，与底层 SystemMessage 解耦） |
+| `inline fun tools(block: ToolsScope.() -> Unit)` | 声明工具集                                                 |
+| `fun maxRounds(n: Int)`                          | 设置最大工具调用循环轮数（需 > 0，否则抛 `IllegalArgumentException`）    |
 
 **示例**：
 
@@ -816,12 +825,12 @@ class Agent(
 
 **属性**：
 
-| 属性 | 类型 | 说明 |
-| --- | --- | --- |
-| `llm` | `Llm` | 底层 LLM 调用入口 |
-| `systemPrompt` | `String?` | 系统提示词，每次请求时动态拼接（不存入 Session） |
-| `tools` | `ToolRegistry` | 工具注册表 |
-| `maxRounds` | `Int` | 最大工具调用循环轮数，默认 10 |
+| 属性             | 类型             | 说明                           |
+|----------------|----------------|------------------------------|
+| `llm`          | `Llm`          | 底层 LLM 调用入口                  |
+| `systemPrompt` | `String?`      | 系统提示词，每次请求时动态拼接（不存入 Session） |
+| `tools`        | `ToolRegistry` | 工具注册表                        |
+| `maxRounds`    | `Int`          | 最大工具调用循环轮数，默认 10             |
 
 **方法**：
 
@@ -834,12 +843,14 @@ suspend fun run(session: Session, input: String): AIMessage
 ```
 
 **参数**：
+
 - `session: Session` — 对话历史容器（不含 system）
 - `input: String` — 本轮用户输入文本
 
 **返回**：最终的 `AIMessage`
 
 **流程**：
+
 1. `session.addUser(input)` — 追加用户输入
 2. 构造请求：动态拼接 system（不存 session）+ 注入完整历史 + 注入工具定义
 3. 调用模型，若返回 toolCalls 则执行工具、回填结果、继续下一轮
@@ -878,22 +889,23 @@ class Session {
 
 **属性**：
 
-| 属性 | 类型 | 说明 |
-| --- | --- | --- |
+| 属性         | 类型              | 说明                                            |
+|------------|-----------------|-----------------------------------------------|
 | `messages` | `List<Message>` | 当前对话历史只读快照（每次返回新列表），仅含 user/assistant/tool 消息 |
 
 **方法**：
 
-| 方法 | 说明 |
-| --- | --- |
-| `fun isEmpty(): Boolean` | 对话历史是否为空 |
-| `fun addUser(text: String)` | 追加纯文本用户消息 |
-| `fun addAssistant(aiMessage: AIMessage)` | 从 AIMessage 映射追加助手消息（content 为空字符串时转为 null） |
-| `fun addAssistantMessage(assistantMessage: AssistantMessage)` | 直接接收 AssistantMessage 追加（用于记录中间工具调用消息） |
-| `fun addToolResult(toolCallId: String, content: String)` | 追加工具回执消息 |
-| `fun clear()` | 清空对话历史 |
+| 方法                                                            | 说明                                          |
+|---------------------------------------------------------------|---------------------------------------------|
+| `fun isEmpty(): Boolean`                                      | 对话历史是否为空                                    |
+| `fun addUser(text: String)`                                   | 追加纯文本用户消息                                   |
+| `fun addAssistant(aiMessage: AIMessage)`                      | 从 AIMessage 映射追加助手消息（content 为空字符串时转为 null） |
+| `fun addAssistantMessage(assistantMessage: AssistantMessage)` | 直接接收 AssistantMessage 追加（用于记录中间工具调用消息）      |
+| `fun addToolResult(toolCallId: String, content: String)`      | 追加工具回执消息                                    |
+| `fun clear()`                                                 | 清空对话历史                                      |
 
 **关键设计**：
+
 - **不含 SystemMessage**：system 是 Agent 的属性，不提供 `addSystem()` 方法
 - **可跨 Agent 复用**：不同 Agent（不同 systemPrompt）可共用同一 Session
 - **记录完整历史**：含中间工具调用过程（AssistantMessage + ToolMessage）
@@ -926,6 +938,7 @@ inline fun <reified Args : Any> ToolsScope.tool(
 ```
 
 **参数**：
+
 - `name: String` — 工具名称（模型调用时使用）
 - `description: String` — 工具描述（帮助模型理解何时调用）
 - `handler: suspend (Args) -> String` — 工具执行回调，接收自动反序列化的参数，返回结果字符串
@@ -942,10 +955,10 @@ data class SearchArgs(
 }
 
 tools {
-    tool<SearchArgs>("search", "搜索文档") { args ->
-        // args.query 必有，args.limit 可能为 null
-        "找到 ${args.limit ?: 10} 条关于 ${args.query} 的结果"
-    }
+tool<SearchArgs>("search", "搜索文档") { args ->
+// args.query 必有，args.limit 可能为 null
+"找到 ${args.limit ?: 10} 条关于 ${args.query} 的结果"
+}
 }
 ```
 
@@ -992,13 +1005,13 @@ fun param(
 
 **参数**：
 
-| 参数 | 类型 | 默认 | 说明 |
-| --- | --- | --- | --- |
-| `name` | `String` | — | 参数名，对应 JSON Schema properties 的 key |
-| `type` | `String` | — | JSON Schema 类型（`"string"` / `"integer"` / `"number"` / `"boolean"` / `"array"` / `"object"`） |
-| `description` | `String?` | null | 参数描述 |
-| `required` | `Boolean` | true | 是否必填 |
-| `enumValues` | `List<String>?` | null | 可选枚举值列表 |
+| 参数            | 类型              | 默认   | 说明                                                                                           |
+|---------------|-----------------|------|----------------------------------------------------------------------------------------------|
+| `name`        | `String`        | —    | 参数名，对应 JSON Schema properties 的 key                                                          |
+| `type`        | `String`        | —    | JSON Schema 类型（`"string"` / `"integer"` / `"number"` / `"boolean"` / `"array"` / `"object"`） |
+| `description` | `String?`       | null | 参数描述                                                                                         |
+| `required`    | `Boolean`       | true | 是否必填                                                                                         |
+| `enumValues`  | `List<String>?` | null | 可选枚举值列表                                                                                      |
 
 ### 9.4 `execute()` arity 重载
 
@@ -1020,6 +1033,7 @@ inline fun <reified A, reified B, reified C, reified D, reified E, reified F, re
 ```
 
 **说明**：
+
 - handler 入参统一为可空（`A?`），缺失或 `JsonNull` 传 null
 - 参数顺序需与 `param()` 声明顺序一致
 - 参数类型通过 `reified` 自动推断，框架据此反序列化 JSON 值
@@ -1090,6 +1104,7 @@ data class ToolMessage(
 ```
 
 **说明**：
+
 - `UserMessage` 有便捷构造 `UserMessage(text: String)`，内部包装为 `TextContent`
 - `AssistantMessage.content` 为 null 表示纯工具调用（无正文）
 - `AssistantMessage.toolCalls` 为空列表表示无工具调用
@@ -1142,14 +1157,14 @@ data class AIMessage(
 
 **属性**：
 
-| 属性 | 类型 | 说明 |
-| --- | --- | --- |
-| `content` | `String` | 正文文本，纯工具调用时为空字符串 |
-| `reasoningContent` | `String?` | 推理过程文本，仅推理模型返回，非推理模型为 null |
-| `toolCalls` | `List<ToolCall>` | 模型请求的工具调用列表，默认空 |
-| `usage` | `Usage?` | token 用量统计，部分供应商流式末尾才返回 |
-| `finishReason` | `FinishReason` | 生成结束原因 |
-| `rawResponse` | `String?` | 原始响应字符串，流式场景通常为 null |
+| 属性                 | 类型               | 说明                         |
+|--------------------|------------------|----------------------------|
+| `content`          | `String`         | 正文文本，纯工具调用时为空字符串           |
+| `reasoningContent` | `String?`        | 推理过程文本，仅推理模型返回，非推理模型为 null |
+| `toolCalls`        | `List<ToolCall>` | 模型请求的工具调用列表，默认空            |
+| `usage`            | `Usage?`         | token 用量统计，部分供应商流式末尾才返回    |
+| `finishReason`     | `FinishReason`   | 生成结束原因                     |
+| `rawResponse`      | `String?`        | 原始响应字符串，流式场景通常为 null       |
 
 ### 10.4 ToolCall / ToolDefinition
 
@@ -1162,7 +1177,8 @@ data class ToolCall(
 )
 ```
 
-**说明**：自定义序列化器 `ToolCallSerializer` 转换为 OpenAI/DeepSeek 嵌套格式 `{"id":"...","type":"function","function":{"name":"...","arguments":"..."}}`。
+**说明**：自定义序列化器 `ToolCallSerializer` 转换为 OpenAI/DeepSeek 嵌套格式
+`{"id":"...","type":"function","function":{"name":"...","arguments":"..."}}`。
 
 ```kotlin
 @Serializable
@@ -1238,12 +1254,12 @@ sealed interface StreamEvent {
 
 **事件类型**：
 
-| 事件 | 字段 | 触发 |
-| --- | --- | --- |
-| `TextDelta` | `delta`（新增片段）、`accumulated`（累积正文） | Completions delta.content / Anthropic text_delta / Responses output_text.delta |
-| `ReasoningDelta` | `delta`、`accumulated` | Completions delta.reasoningContent / Anthropic thinking_delta |
-| `ToolCallDelta` | `index`、`id`（首次非空）、`name`（首次非空）、`argumentsDelta`、`argumentsAccumulated` | Completions delta.toolCalls / Anthropic tool_use / Responses function_call |
-| `Done` | `content`、`reasoningContent`、`toolCalls`、`usage`、`finishReason`、`rawResponse` | 流结束 |
+| 事件               | 字段                                                                            | 触发                                                                             |
+|------------------|-------------------------------------------------------------------------------|--------------------------------------------------------------------------------|
+| `TextDelta`      | `delta`（新增片段）、`accumulated`（累积正文）                                             | Completions delta.content / Anthropic text_delta / Responses output_text.delta |
+| `ReasoningDelta` | `delta`、`accumulated`                                                         | Completions delta.reasoningContent / Anthropic thinking_delta                  |
+| `ToolCallDelta`  | `index`、`id`（首次非空）、`name`（首次非空）、`argumentsDelta`、`argumentsAccumulated`       | Completions delta.toolCalls / Anthropic tool_use / Responses function_call     |
+| `Done`           | `content`、`reasoningContent`、`toolCalls`、`usage`、`finishReason`、`rawResponse` | 流结束                                                                            |
 
 **`Done.toAIMessage()`**：将 `Done` 事件转换为 `AIMessage`，便于需要统一类型的场景。
 
@@ -1284,6 +1300,7 @@ suspend fun Llm.chatWithMcp(
 ```
 
 **参数**：
+
 - `mcpClient: McpClient` — MCP 客户端实例
 - `maxRounds: Int = 10` — 最大工具调用循环轮数
 - `block: ChatRequestBuilder.() -> Unit` — 请求构建块
@@ -1321,6 +1338,7 @@ suspend fun Llm.chatWithAcpAgent(
 ```
 
 **参数**：
+
 - `client: AcpClient` — ACP 客户端实例
 - `prompt: String` — 用户提示词
 - `cwd: String = ""` — 工作目录
@@ -1366,6 +1384,7 @@ suspend fun Llm.chatWithA2aAgent(
 ```
 
 **参数**：
+
 - `client: A2aClient` — A2A 客户端实例
 - `prompt: String` — 用户提示词
 - `onUpdate: suspend (A2aStreamEvent) -> Unit = {}` — 流式更新回调
@@ -1410,26 +1429,27 @@ class RACApiException(
 
 class RACSerializationException(message: String, cause: Throwable? = null) : RACException(message, cause)
 
-class RACTimeoutException(message: String = "Request timed out", cause: Throwable? = null) : RACException(message, cause)
+class RACTimeoutException(message: String = "Request timed out", cause: Throwable? = null) :
+    RACException(message, cause)
 ```
 
 **异常类**：
 
-| 异常类 | 父类 | 用途 |
-| --- | --- | --- |
-| `RACException` | `Exception` | 所有 RAC 库异常的基类，open 允许子类化 |
-| `RACNetworkException` | `RACException` | 网络层错误（连接失败、DNS 解析失败、TLS 握手失败） |
-| `RACApiException` | `RACException` | 供应商返回非成功 HTTP 状态码（4xx/5xx） |
-| `RACSerializationException` | `RACException` | JSON 与领域模型互转失败 |
-| `RACTimeoutException` | `RACException` | 请求超时（连接超时/读取超时） |
+| 异常类                         | 父类             | 用途                            |
+|-----------------------------|----------------|-------------------------------|
+| `RACException`              | `Exception`    | 所有 RAC 库异常的基类，open 允许子类化      |
+| `RACNetworkException`       | `RACException` | 网络层错误（连接失败、DNS 解析失败、TLS 握手失败） |
+| `RACApiException`           | `RACException` | 供应商返回非成功 HTTP 状态码（4xx/5xx）    |
+| `RACSerializationException` | `RACException` | JSON 与领域模型互转失败                |
+| `RACTimeoutException`       | `RACException` | 请求超时（连接超时/读取超时）               |
 
 **RACApiException 额外属性**：
 
-| 属性 | 类型 | 说明 |
-| --- | --- | --- |
-| `statusCode` | `Int` | HTTP 状态码 |
-| `errorBody` | `String` | 供应商返回的原始错误响应体 |
-| `headers` | `Map<String, String>` | 响应头，含 `Retry-After` 等重试指导字段 |
+| 属性           | 类型                    | 说明                          |
+|--------------|-----------------------|-----------------------------|
+| `statusCode` | `Int`                 | HTTP 状态码                    |
+| `errorBody`  | `String`              | 供应商返回的原始错误响应体               |
+| `headers`    | `Map<String, String>` | 响应头，含 `Retry-After` 等重试指导字段 |
 
 **异常处理示例**：
 

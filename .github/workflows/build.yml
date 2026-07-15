@@ -81,7 +81,7 @@ jobs:
       # Ubuntu: Linux x64 编译验证（不运行测试，Linux 原生测试需 Linux 环境）
       - name: Compile Linux targets (Ubuntu)
         if: runner.os == 'Linux'
-        run: ./gradlew compileKotlinLinuxX64 compileKotlinLinuxArm64 --no-daemon
+        run: ./gradlew linuxX64Test --no-daemon
         shell: bash
 
       # Windows: mingwX64 测试（在 Windows 上运行 Kotlin/Native 测试）
@@ -93,7 +93,7 @@ jobs:
       # macOS: iOS 模拟器编译 + macOSArm64 编译（不运行测试，需模拟器环境）
       - name: Compile Apple targets (macOS)
         if: runner.os == 'macOS'
-        run: ./gradlew compileKotlinIosArm64 compileKotlinIosSimulatorArm64 compileKotlinMacosArm64 --no-daemon
+        run: ./gradlew macosArm64Test --no-daemon
         shell: bash
 
       # ── 7. 上传测试报告 ───────────────────────────────────────────────────

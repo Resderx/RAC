@@ -1,6 +1,9 @@
+[English](quickstart.en.md) | **中文**
+
 # 入门指南
 
-本文档帮助你在 10 分钟内完成 RAC 的安装、配置与第一次 AI 调用，并逐步介绍流式输出、自动化 Agent、工具调用、多轮对话与定制化参数。如需完整的 API 签名参考，请阅读 [API 参考](usage.md)。
+本文档帮助你在 10 分钟内完成 RAC 的安装、配置与第一次 AI 调用，并逐步介绍流式输出、自动化 Agent、工具调用、多轮对话与定制化参数。如需完整的
+API 签名参考，请阅读 [API 参考](usage.md)。
 
 ## 目录
 
@@ -18,14 +21,15 @@
 
 ## 1. 环境要求
 
-| 项 | 最低版本 | 推荐 |
-| --- | --- | --- |
-| Kotlin | 2.4.0 | 2.4.0 |
-| Gradle | 8.5 | 8.7+ |
-| JDK（构建期） | 17 | 21 |
+| 项                    | 最低版本  | 推荐    |
+|----------------------|-------|-------|
+| Kotlin               | 2.4.0 | 2.4.0 |
+| Gradle               | 8.5   | 8.7+  |
+| JDK（构建期）             | 17    | 21    |
 | Kotlin Multiplatform | 2.4.0 | 2.4.0 |
 
-RAC 是 KMP 库，支持 JVM、Android、iOS、mingwX64、linuxX64、linuxArm64、macosArm64、JS、WasmJs 九大目标平台。你的项目只需引入对应 Ktor 引擎即可获得网络能力（RAC 已通过约定插件自动配置各平台引擎）。
+RAC 是 KMP 库，支持 JVM、Android、iOS、mingwX64、linuxX64、linuxArm64、macosArm64、JS、WasmJs 九大目标平台。你的项目只需引入对应
+Ktor 引擎即可获得网络能力（RAC 已通过约定插件自动配置各平台引擎）。
 
 ## 2. 安装
 
@@ -41,12 +45,12 @@ kotlin {
 
 dependencies {
     commonMain {
-        implementation("top.resderx.rac:rac-core:0.1.0-alpha01")
+        implementation("top.resderx.rac:rac-core:0.1.0-alpha02")
     }
     // 按需引入协议模块
-    // commonMain { implementation("top.resderx.rac:rac-mcp:0.1.0-alpha01") }
-    // commonMain { implementation("top.resderx.rac:rac-acp:0.1.0-alpha01") }
-    // commonMain { implementation("top.resderx.rac:rac-a2a:0.1.0-alpha01") }
+    // commonMain { implementation("top.resderx.rac:rac-mcp:0.1.0-alpha02") }
+    // commonMain { implementation("top.resderx.rac:rac-acp:0.1.0-alpha02") }
+    // commonMain { implementation("top.resderx.rac:rac-a2a:0.1.0-alpha02") }
 }
 ```
 
@@ -62,7 +66,7 @@ repositories {
 
 ```kotlin
 dependencies {
-    implementation("top.resderx.rac:rac-core:0.1.0-alpha01")
+    implementation("top.resderx.rac:rac-core:0.1.0-alpha02")
 }
 ```
 
@@ -105,6 +109,7 @@ fun main() = runBlocking {
 ```
 
 **说明**：
+
 - `llm { }` 是顶层 DSL 入口，返回 `Llm` 实例
 - `providers { }` 块内注册供应商，每个供应商有对应的扩展函数（`deepseek` / `openai` / `anthropic` 等）
 - `models { }` 块内注册模型，首个注册的模型自动成为该供应商的默认模型
@@ -157,7 +162,8 @@ val ai = llm {
 | `MinimaxModel`   | MiniMax       | 3    | `ABAB7`、`M2_5`                                    |
 | `MimoModel`      | 小米 MiMo       | 2    | `V2_5_PRO`、`V2_FLASH`                             |
 
-推理/思考类模型（如 `DeepSeekModel.V4_PRO`、`KimiModel.K2_THINKING`）的预设已自动设置 `enableThinking = true` 和合适的 `reasoningEffort`。
+推理/思考类模型（如 `DeepSeekModel.V4_PRO`、`KimiModel.K2_THINKING`）的预设已自动设置 `enableThinking = true` 和合适的
+`reasoningEffort`。
 
 ## 5. 流式输出
 
@@ -208,14 +214,15 @@ fun main() = runBlocking {
 
 **StreamEvent 四种事件类型**：
 
-| 事件 | 字段 | 说明 |
-| --- | --- | --- |
-| `TextDelta` | `delta`（新增片段）、`accumulated`（累积正文） | 模型生成的正文片段 |
-| `ReasoningDelta` | `delta`、`accumulated` | 思考过程片段（仅推理模型） |
-| `ToolCallDelta` | `index`、`id`、`name`、`argumentsDelta`、`argumentsAccumulated` | 工具调用增量（已聚合碎片） |
-| `Done` | `content`、`reasoningContent`、`toolCalls`、`usage`、`finishReason` | 流结束，自包含完整信息 |
+| 事件               | 字段                                                              | 说明            |
+|------------------|-----------------------------------------------------------------|---------------|
+| `TextDelta`      | `delta`（新增片段）、`accumulated`（累积正文）                               | 模型生成的正文片段     |
+| `ReasoningDelta` | `delta`、`accumulated`                                           | 思考过程片段（仅推理模型） |
+| `ToolCallDelta`  | `index`、`id`、`name`、`argumentsDelta`、`argumentsAccumulated`     | 工具调用增量（已聚合碎片） |
+| `Done`           | `content`、`reasoningContent`、`toolCalls`、`usage`、`finishReason` | 流结束，自包含完整信息   |
 
 **API 选择**：
+
 - `chatStream { }` —— Completions API 的流式（DeepSeek/OpenAI/Qwen 等大部分供应商）
 - `anthropicStream { }` —— Anthropic API 的流式（仅 Anthropic 供应商）
 - `respondStream { }` —— Responses API 的流式（仅 OpenAI Responses）
@@ -297,6 +304,7 @@ fun main() = runBlocking {
 ```
 
 **Agent.run 的执行流程**：
+
 1. 将用户输入追加到 Session
 2. 动态拼接 systemPrompt 到请求头部（不存入 Session）
 3. 注入完整对话历史 + 工具定义
@@ -335,6 +343,7 @@ agent.run(session, "我叫什么名字？")
 ```
 
 **Session 的核心设计**：
+
 - **不含 system 消息**：system 是 Agent 的属性，每次请求时动态拼接，不存入 Session
 - **可跨 Agent 复用**：不同 Agent（不同 systemPrompt）可共用同一 Session
 - **记录完整历史**：含中间工具调用过程（AssistantMessage + ToolMessage），便于调试与持久化
@@ -391,11 +400,11 @@ ai.chat {
 
 **enableThinking 在不同 API 上的行为**：
 
-| API | enableThinking=true | enableThinking=false |
-| --- | --- | --- |
-| Completions | 自动设 `reasoningEffort="medium"`（未显式设置时） | 强制 `reasoningEffort=null` |
-| Anthropic | 构造 `thinking={type:"enabled", budget_tokens:maxTokens*4/5}` | 不发送 thinking 字段 |
-| Responses | 不支持，静默忽略 | 不支持，静默忽略 |
+| API         | enableThinking=true                                         | enableThinking=false      |
+|-------------|-------------------------------------------------------------|---------------------------|
+| Completions | 自动设 `reasoningEffort="medium"`（未显式设置时）                      | 强制 `reasoningEffort=null` |
+| Anthropic   | 构造 `thinking={type:"enabled", budget_tokens:maxTokens*4/5}` | 不发送 thinking 字段           |
+| Responses   | 不支持，静默忽略                                                    | 不支持，静默忽略                  |
 
 ### 8.4 分层配置
 
