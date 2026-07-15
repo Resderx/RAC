@@ -14,12 +14,14 @@
 
 package top.resderx.rac.acp
 
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import java.io.BufferedReader
 import java.io.BufferedWriter
 
@@ -82,8 +84,10 @@ private class JvmAcpStdioServerConnection : AcpConnection {
      *
      * - 实现：获取 System.in 的 BufferedReader 与 System.out 的 BufferedWriter，
      *   启动守护线程持续读取 stdin
+     * - 阻塞调用：标准流的包装与首次读取可能阻塞，通过 [withContext]`[Dispatchers.IO]`
+     *   切换到 IO 线程池，避免阻塞调用方协程线程
      */
-    override suspend fun connect() {
+    override suspend fun connect() = withContext(Dispatchers.IO) {
         stdin = System.`in`.bufferedReader()
         stdout = System.out.bufferedWriter()
         readerThread = Thread({ readLoop() }, "acp-server-stdio-reader").apply { isDaemon = true; start() }
@@ -112,26 +116,35 @@ private class JvmAcpStdioServerConnection : AcpConnection {
     /**
      * 发送一条 JSON-RPC 消息到 stdout。
      *
+     * - 阻塞调用：管道写满时 [BufferedWriter.write]/[BufferedWriter.flush] 会阻塞，
+     *   通过 [withContext]`[Dispatchers.IO]` 切换到 IO 线程池
+     *
      * @param message JSON-RPC 消息字符串（MUST NOT 包含嵌入换行）
      */
     override suspend fun send(message: String) {
         val writer = stdout
             ?: throw top.resderx.rac.exceptions.RACException("ACP server stdio connection not connected")
-        writeMutex.withLock {
-            writer.write(message)
-            writer.write("\n")
-            writer.flush()
+        withContext(Dispatchers.IO) {
+            writeMutex.withLock {
+                writer.write(message)
+                writer.write("\n")
+                writer.flush()
+            }
         }
     }
 
     /**
      * 关闭连接。
      * - 边缘：幂等；不关闭 System.in/System.out 本身，仅关闭包装的 reader/writer
+     * - 阻塞调用：流的 [BufferedWriter.close]/[BufferedReader.close] 可能 flush 残留数据而阻塞，
+     *   通过 [withContext]`[Dispatchers.IO]` 切换到 IO 线程池
      */
     override suspend fun close() {
         if (closed) return
         closed = true
-        try { stdin?.close() } catch (_: Exception) {}
-        try { stdout?.close() } catch (_: Exception) {}
+        withContext(Dispatchers.IO) {
+            try { stdin?.close() } catch (_: Exception) {}
+            try { stdout?.close() } catch (_: Exception) {}
+        }
     }
 }

@@ -179,7 +179,7 @@ class AcpProtocolTest {
      */
     private fun createTestClient(
         connection: FakeAcpConnection,
-        permissionHandler: suspend (top.resderx.rac.acp.PermissionRequest) -> PermissionOutcome = {
+        permissionHandler: suspend (PermissionRequest) -> PermissionOutcome = {
             PermissionOutcome(selected = PermissionOutcomeValue.ALLOW)
         },
     ): TestAcpClient {
@@ -571,7 +571,7 @@ class AcpProtocolTest {
             override suspend fun sendUpdate(update: SessionUpdate) {
                 updates.add(update)
             }
-            override suspend fun requestPermission(permission: top.resderx.rac.acp.PermissionRequest): PermissionOutcome {
+            override suspend fun requestPermission(permission: PermissionRequest): PermissionOutcome {
                 return PermissionOutcome(selected = PermissionOutcomeValue.ALLOW)
             }
         }

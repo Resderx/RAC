@@ -15,9 +15,11 @@
 package top.resderx.rac.mcp
 
 import top.resderx.rac.exceptions.RACException
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
@@ -92,8 +94,10 @@ private class JvmStdioMcpConnection(
      * - 实现：ProcessBuilder 构造命令 + 参数，设置工作目录与环境变量，start() 启动；
      *   获取 stdin (outputStream) 与 stdout (inputStream)；
      *   启动后台线程持续读取 stdout 行并放入 messageChannel
+     * - 阻塞调用：[ProcessBuilder.start] 与流获取为阻塞 IO（fork/exec），
+     *   通过 [withContext]`[Dispatchers.IO]` 切换到 IO 线程池，避免阻塞调用方协程线程导致线程匮乏
      */
-    override suspend fun connect() {
+    override suspend fun connect() = withContext(Dispatchers.IO) {
         val command = mutableListOf(transport.command)
         command.addAll(transport.args)
         val pb = ProcessBuilder(command)
@@ -133,6 +137,9 @@ private class JvmStdioMcpConnection(
      * - 实现：writeMutex 保护下写入 stdin → 从 messageChannel 读取 → 过滤通知 → 返回响应
      * - 超时：withTimeout 控制最大等待时间；超时抛 TimeoutCancellationException
      * - 过滤：跳过非 JSON 行与通知（无 result/error 字段的消息）
+     * - 阻塞调用：管道写满时 [BufferedWriter.write]/[BufferedWriter.flush] 会阻塞，
+     *   通过 [withContext]`[Dispatchers.IO]` 切换到 IO 线程池；
+     *   [Channel.receive] 为 suspend（非阻塞 IO），无需切换
      *
      * @param message JSON-RPC 请求消息字符串
      * @return JSON-RPC 响应消息字符串
@@ -140,10 +147,12 @@ private class JvmStdioMcpConnection(
     override suspend fun request(message: String): String {
         val writer = stdin ?: throw RACException("Stdio connection not connected")
         // 写入请求到子进程 stdin
-        writeMutex.withLock {
-            writer.write(message)
-            writer.write("\n")
-            writer.flush()
+        withContext(Dispatchers.IO) {
+            writeMutex.withLock {
+                writer.write(message)
+                writer.write("\n")
+                writer.flush()
+            }
         }
         // 从 Channel 读取响应，跳过通知与无效行
         return withTimeout(timeoutMillis.milliseconds) {
@@ -170,27 +179,36 @@ private class JvmStdioMcpConnection(
     /**
      * 发送 JSON-RPC 通知（不等待响应）。
      *
+     * - 阻塞调用：管道写满时 [BufferedWriter.write]/[BufferedWriter.flush] 会阻塞，
+     *   通过 [withContext]`[Dispatchers.IO]` 切换到 IO 线程池
+     *
      * @param message JSON-RPC 通知消息字符串
      */
     override suspend fun notify(message: String) {
         val writer = stdin ?: throw RACException("Stdio connection not connected")
-        writeMutex.withLock {
-            writer.write(message)
-            writer.write("\n")
-            writer.flush()
+        withContext(Dispatchers.IO) {
+            writeMutex.withLock {
+                writer.write(message)
+                writer.write("\n")
+                writer.flush()
+            }
         }
     }
 
     /**
      * 关闭连接：关闭流、销毁子进程。
      * - 边缘：幂等，多次调用安全
+     * - 阻塞调用：流的 [BufferedWriter.close]/[BufferedReader.close] 可能 flush 残留数据而阻塞，
+     *   通过 [withContext]`[Dispatchers.IO]` 切换到 IO 线程池
      */
     override suspend fun close() {
         if (closed) return
         closed = true
-        try { stdin?.close() } catch (_: Exception) {}
-        try { stdout?.close() } catch (_: Exception) {}
-        try { process?.destroy() } catch (_: Exception) {}
+        withContext(Dispatchers.IO) {
+            try { stdin?.close() } catch (_: Exception) {}
+            try { stdout?.close() } catch (_: Exception) {}
+            try { process?.destroy() } catch (_: Exception) {}
+        }
         messageChannel.close()
     }
 }
