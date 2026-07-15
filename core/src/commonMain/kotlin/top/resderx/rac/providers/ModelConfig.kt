@@ -34,6 +34,11 @@ package top.resderx.rac.providers
  *   Completions 通过 reasoningEffort 间接控制（true 且未设 reasoningEffort 时自动设为 "medium"），
  *   Anthropic 通过 thinking 对象控制，Responses 不支持
  *
+ * 多模态字段说明：
+ * - modalities：模型支持的输入模态集合（[Modality.TEXT]/[Modality.IMAGE]/[Modality.AUDIO]），
+ *   空集表示未声明（由调用方自行判断）；preset 中按模型能力预填，调用方可据此选择合适的
+ *   [top.resderx.rac.messages.Content] 子类构造多模态消息
+ *
  * @property maxTokens 最大生成 token 数，null 表示沿用服务端默认
  * @property temperature 采样温度，null 表示沿用服务端默认
  * @property topP nucleus sampling 参数，null 表示沿用服务端默认
@@ -42,6 +47,7 @@ package top.resderx.rac.providers
  * @property stop 停止序列，模型生成到任一字符串时立即停止，null 表示不设置
  * @property seed 随机种子，用于确定性输出，null 表示沿用服务端随机
  * @property enableThinking 思考开关，true 启用扩展思考，false 禁用，null 表示沿用默认行为
+ * @property modalities 模型支持的输入模态集合，空集表示未声明（由调用方自行判断）
  */
 data class ModelConfig(
     val maxTokens: Long? = null,
@@ -52,4 +58,5 @@ data class ModelConfig(
     val stop: List<String>? = null,
     val seed: Long? = null,
     val enableThinking: Boolean? = null,
+    val modalities: Set<Modality> = emptySet(),
 )

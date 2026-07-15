@@ -17,6 +17,7 @@ package top.resderx.rac.dsl
 import top.resderx.rac.exceptions.RACException
 import top.resderx.rac.network.HttpClientFactory
 import top.resderx.rac.network.RetryPolicy
+import top.resderx.rac.providers.Modality
 import top.resderx.rac.providers.ModelConfig
 import top.resderx.rac.providers.ModelProvider
 import top.resderx.rac.providers.ProviderRegistry
