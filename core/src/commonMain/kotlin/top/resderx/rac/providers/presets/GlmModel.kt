@@ -14,6 +14,7 @@
 
 package top.resderx.rac.providers.presets
 
+import top.resderx.rac.providers.Modality
 import top.resderx.rac.providers.ModelConfig
 
 /**
@@ -40,24 +41,25 @@ enum class GlmModel(
         recommendedConfig = ModelConfig(
             reasoningEffort = "high",
             enableThinking = true,
+            modalities = setOf(Modality.TEXT, Modality.IMAGE),
         ),
     ),
 
     /** GLM-5.1——上一代旗舰，性能稳定。 */
     GLM_5_1(
         modelName = "glm-5.1",
-        recommendedConfig = ModelConfig(),
+        recommendedConfig = ModelConfig(modalities = setOf(Modality.TEXT, Modality.IMAGE)),
     ),
 
     /** GLM-5——初代 5 系列，通用能力强。 */
     GLM_5(
         modelName = "glm-5",
-        recommendedConfig = ModelConfig(),
+        recommendedConfig = ModelConfig(modalities = setOf(Modality.TEXT, Modality.IMAGE)),
     ),
 
     /** GLM-4.7 Flash——轻量快速模型，低延迟。 */
     GLM_4_7_FLASH(
         modelName = "glm-4.7-flash",
-        recommendedConfig = ModelConfig(),
+        recommendedConfig = ModelConfig(modalities = setOf(Modality.TEXT, Modality.IMAGE)),
     ),
 }

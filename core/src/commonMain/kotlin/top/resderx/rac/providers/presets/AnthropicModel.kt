@@ -14,6 +14,7 @@
 
 package top.resderx.rac.providers.presets
 
+import top.resderx.rac.providers.Modality
 import top.resderx.rac.providers.ModelConfig
 
 /**
@@ -39,6 +40,7 @@ enum class AnthropicModel(
         modelName = "claude-opus-4-1",
         recommendedConfig = ModelConfig(
             enableThinking = true,
+            modalities = setOf(Modality.TEXT, Modality.IMAGE),
         ),
     ),
 
@@ -47,6 +49,7 @@ enum class AnthropicModel(
         modelName = "claude-sonnet-4-6",
         recommendedConfig = ModelConfig(
             enableThinking = true,
+            modalities = setOf(Modality.TEXT, Modality.IMAGE),
         ),
     ),
 
@@ -55,6 +58,7 @@ enum class AnthropicModel(
         modelName = "claude-opus-4-20250514",
         recommendedConfig = ModelConfig(
             temperature = 0.0,
+            modalities = setOf(Modality.TEXT, Modality.IMAGE),
         ),
     ),
 
@@ -63,6 +67,7 @@ enum class AnthropicModel(
         modelName = "claude-sonnet-4-20250514",
         recommendedConfig = ModelConfig(
             temperature = 0.0,
+            modalities = setOf(Modality.TEXT, Modality.IMAGE),
         ),
     ),
 }

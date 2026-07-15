@@ -14,6 +14,7 @@
 
 package top.resderx.rac.providers.presets
 
+import top.resderx.rac.providers.Modality
 import top.resderx.rac.providers.ModelConfig
 
 /**
@@ -36,7 +37,7 @@ enum class MinimaxModel(
     /** ABAB7——通用大模型，综合能力强。 */
     ABAB7(
         modelName = "abab7",
-        recommendedConfig = ModelConfig(),
+        recommendedConfig = ModelConfig(modalities = setOf(Modality.TEXT)),
     ),
 
     /** MiniMax-M2.5——M2.5 系列，增强推理能力。 */
@@ -45,12 +46,13 @@ enum class MinimaxModel(
         recommendedConfig = ModelConfig(
             reasoningEffort = "high",
             enableThinking = true,
+            modalities = setOf(Modality.TEXT),
         ),
     ),
 
     /** MiniMax-M2——M2 系列，通用能力强。 */
     M2(
         modelName = "MiniMax-M2",
-        recommendedConfig = ModelConfig(),
+        recommendedConfig = ModelConfig(modalities = setOf(Modality.TEXT)),
     ),
 }

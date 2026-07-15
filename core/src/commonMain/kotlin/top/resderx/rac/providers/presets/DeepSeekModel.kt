@@ -14,6 +14,7 @@
 
 package top.resderx.rac.providers.presets
 
+import top.resderx.rac.providers.Modality
 import top.resderx.rac.providers.ModelConfig
 
 /**
@@ -38,6 +39,7 @@ enum class DeepSeekModel(
         recommendedConfig = ModelConfig(
             reasoningEffort = "high",
             enableThinking = true,
+            modalities = setOf(Modality.TEXT),
         ),
     ),
 
@@ -46,6 +48,7 @@ enum class DeepSeekModel(
         modelName = "deepseek-v4-flash",
         recommendedConfig = ModelConfig(
             reasoningEffort = "medium",
+            modalities = setOf(Modality.TEXT),
         ),
     ),
 }

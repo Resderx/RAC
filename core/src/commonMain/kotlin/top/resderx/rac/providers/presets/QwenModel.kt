@@ -14,6 +14,7 @@
 
 package top.resderx.rac.providers.presets
 
+import top.resderx.rac.providers.Modality
 import top.resderx.rac.providers.ModelConfig
 
 /**
@@ -42,13 +43,14 @@ enum class QwenModel(
         recommendedConfig = ModelConfig(
             reasoningEffort = "high",
             enableThinking = true,
+            modalities = setOf(Modality.TEXT, Modality.IMAGE),
         ),
     ),
 
     /** Qwen3.7 Plus Preview——最新 Plus，平衡性能与成本。 */
     PLUS_3_7(
         modelName = "qwen3.7-plus-preview",
-        recommendedConfig = ModelConfig(),
+        recommendedConfig = ModelConfig(modalities = setOf(Modality.TEXT, Modality.IMAGE)),
     ),
 
     /** Qwen3.6 Max Preview——上一代 Max 旗舰。 */
@@ -57,24 +59,25 @@ enum class QwenModel(
         recommendedConfig = ModelConfig(
             reasoningEffort = "high",
             enableThinking = true,
+            modalities = setOf(Modality.TEXT, Modality.IMAGE),
         ),
     ),
 
     /** Qwen3.6 Plus——上一代 Plus，性价比之选。 */
     PLUS_3_6(
         modelName = "qwen3.6-plus",
-        recommendedConfig = ModelConfig(),
+        recommendedConfig = ModelConfig(modalities = setOf(Modality.TEXT, Modality.IMAGE)),
     ),
 
     /** Qwen3.6 Flash——轻量快速，低延迟。 */
     FLASH_3_6(
         modelName = "qwen3.6-flash",
-        recommendedConfig = ModelConfig(),
+        recommendedConfig = ModelConfig(modalities = setOf(Modality.TEXT, Modality.IMAGE)),
     ),
 
     /** Qwen Max Flash——Max 系列轻量版，速度更快。 */
     MAX_FLASH(
         modelName = "qwen-max-flash",
-        recommendedConfig = ModelConfig(),
+        recommendedConfig = ModelConfig(modalities = setOf(Modality.TEXT, Modality.IMAGE)),
     ),
 }

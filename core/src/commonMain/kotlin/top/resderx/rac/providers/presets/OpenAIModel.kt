@@ -14,6 +14,7 @@
 
 package top.resderx.rac.providers.presets
 
+import top.resderx.rac.providers.Modality
 import top.resderx.rac.providers.ModelConfig
 
 /**
@@ -40,6 +41,7 @@ enum class OpenAIModel(
         recommendedConfig = ModelConfig(
             reasoningEffort = "high",
             enableThinking = true,
+            modalities = setOf(Modality.TEXT, Modality.IMAGE, Modality.AUDIO),
         ),
     ),
 
@@ -49,18 +51,23 @@ enum class OpenAIModel(
         recommendedConfig = ModelConfig(
             reasoningEffort = "high",
             enableThinking = true,
+            modalities = setOf(Modality.TEXT, Modality.IMAGE, Modality.AUDIO),
         ),
     ),
 
     /** GPT-5.4 Mini——轻量版，速度快成本低，适合日常对话。 */
     GPT_5_4_MINI(
         modelName = "gpt-5.4-mini",
-        recommendedConfig = ModelConfig(),
+        recommendedConfig = ModelConfig(
+            modalities = setOf(Modality.TEXT, Modality.IMAGE),
+        ),
     ),
 
     /** GPT-5.4 Nano——超轻量版，极致速度，适合简单任务与边缘部署。 */
     GPT_5_4_NANO(
         modelName = "gpt-5.4-nano",
-        recommendedConfig = ModelConfig(),
+        recommendedConfig = ModelConfig(
+            modalities = setOf(Modality.TEXT, Modality.IMAGE),
+        ),
     ),
 }

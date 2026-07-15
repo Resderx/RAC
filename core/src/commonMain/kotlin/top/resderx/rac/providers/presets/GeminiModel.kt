@@ -14,6 +14,7 @@
 
 package top.resderx.rac.providers.presets
 
+import top.resderx.rac.providers.Modality
 import top.resderx.rac.providers.ModelConfig
 
 /**
@@ -38,12 +39,15 @@ enum class GeminiModel(
         recommendedConfig = ModelConfig(
             reasoningEffort = "high",
             enableThinking = true,
+            modalities = setOf(Modality.TEXT, Modality.IMAGE, Modality.AUDIO),
         ),
     ),
 
     /** Gemini 3 Flash——轻量快速模型，低延迟，适合日常任务。 */
     FLASH_3(
         modelName = "gemini-3-flash",
-        recommendedConfig = ModelConfig(),
+        recommendedConfig = ModelConfig(
+            modalities = setOf(Modality.TEXT, Modality.IMAGE, Modality.AUDIO),
+        ),
     ),
 }

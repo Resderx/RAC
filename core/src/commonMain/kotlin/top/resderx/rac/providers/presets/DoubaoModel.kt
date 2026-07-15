@@ -14,6 +14,7 @@
 
 package top.resderx.rac.providers.presets
 
+import top.resderx.rac.providers.Modality
 import top.resderx.rac.providers.ModelConfig
 
 /**
@@ -41,19 +42,24 @@ enum class DoubaoModel(
         recommendedConfig = ModelConfig(
             reasoningEffort = "high",
             enableThinking = true,
+            modalities = setOf(Modality.TEXT, Modality.IMAGE),
         ),
     ),
 
     /** Doubao Seed 1.6——1.6 系列标准版，通用能力强。 */
     SEED_1_6(
         modelName = "doubao-seed-1.6",
-        recommendedConfig = ModelConfig(),
+        recommendedConfig = ModelConfig(
+            modalities = setOf(Modality.TEXT, Modality.IMAGE),
+        ),
     ),
 
     /** Doubao Seed 1.6 Flash——1.6 轻量版，低延迟。 */
     SEED_1_6_FLASH(
         modelName = "doubao-seed-1.6-flash",
-        recommendedConfig = ModelConfig(),
+        recommendedConfig = ModelConfig(
+            modalities = setOf(Modality.TEXT, Modality.IMAGE),
+        ),
     ),
 
     /** Doubao Seed 1.6 Thinking——1.6 思考模型，深度推理。 */
@@ -62,12 +68,15 @@ enum class DoubaoModel(
         recommendedConfig = ModelConfig(
             reasoningEffort = "high",
             enableThinking = true,
+            modalities = setOf(Modality.TEXT),
         ),
     ),
 
     /** Doubao Seed 1.6 Vision——1.6 视觉模型，支持文本输入。 */
     SEED_1_6_VISION(
         modelName = "doubao-seed-1.6-vision",
-        recommendedConfig = ModelConfig(),
+        recommendedConfig = ModelConfig(
+            modalities = setOf(Modality.TEXT, Modality.IMAGE),
+        ),
     ),
 }
