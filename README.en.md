@@ -149,7 +149,6 @@ See the documentation links below for more examples.
   Responses protocols
 - **[ACP Integration](docs/acp.en.md)** — Agent Client Protocol bidirectional support in detail
 - **[A2A Integration](docs/a2a.en.md)** — Agent-to-Agent Protocol bidirectional support in detail
-- **[Testing](docs/testing.md)** — MockEngine end-to-end testing methods
 
 ## Core Design
 

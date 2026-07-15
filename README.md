@@ -135,7 +135,6 @@ fun main() = runBlocking {
 - **[API 协议风格](docs/api-styles.md)** — Completions / Anthropic / Responses 三种协议的差异与选择
 - **[ACP 集成](docs/acp.md)** — Agent Client Protocol 双向支持详解
 - **[A2A 集成](docs/a2a.md)** — Agent-to-Agent Protocol 双向支持详解
-- **[测试](docs/testing.md)** — MockEngine 端到端测试方法
 
 ## 核心设计
 
