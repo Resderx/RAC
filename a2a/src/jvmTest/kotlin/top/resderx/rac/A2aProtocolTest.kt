@@ -354,7 +354,7 @@ class A2aProtocolTest {
     /**
      * 创建由 SseCapableMockEngine 支撑的 Llm 实例，handler 决定 HTTP 响应。
      */
-    private fun racWithMock(handler: io.ktor.client.engine.mock.MockRequestHandler): Llm {
+    private fun racWithMock(handler: MockRequestHandler): Llm {
         val client = HttpClient(SseCapableMockEngine(handler)) {
             install(SSE)
             install(HttpTimeout)

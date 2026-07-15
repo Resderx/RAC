@@ -14,69 +14,25 @@
 
 package top.resderx.rac
 
-import top.resderx.rac.acp.AcpAgentContext
-import top.resderx.rac.acp.AcpAgentHandler
-import top.resderx.rac.acp.AcpAgentServer
-import top.resderx.rac.acp.AcpClientConfig
-import top.resderx.rac.acp.AcpConnection
-import top.resderx.rac.acp.AcpHttpTransport
-import top.resderx.rac.acp.AcpTextBlock
-import top.resderx.rac.acp.AgentCapabilities
-import top.resderx.rac.acp.AgentMessageChunk
-import top.resderx.rac.acp.DefaultAcpClient
-import top.resderx.rac.acp.InitializeParams
-import top.resderx.rac.acp.InitializeResult
-import top.resderx.rac.acp.ImplementationInfo
-import top.resderx.rac.acp.PermissionOutcome
-import top.resderx.rac.acp.PermissionOutcomeValue
-import top.resderx.rac.acp.RacAcpAgent
-import top.resderx.rac.acp.SessionLoadParams
-import top.resderx.rac.acp.SessionLoadResult
-import top.resderx.rac.acp.SessionNewParams
-import top.resderx.rac.acp.SessionNewResult
-import top.resderx.rac.acp.SessionPromptParams
-import top.resderx.rac.acp.SessionPromptResult
-import top.resderx.rac.acp.SessionUpdate
-import top.resderx.rac.acp.StopReason
-import top.resderx.rac.acp.chatWithAcpAgent
-import top.resderx.rac.acp.serveAsAcpAgent
+import io.ktor.client.*
+import io.ktor.client.engine.mock.*
+import io.ktor.client.plugins.*
+import io.ktor.client.plugins.sse.*
+import io.ktor.http.*
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.serialization.json.*
+import top.resderx.rac.acp.*
 import top.resderx.rac.dsl.Llm
 import top.resderx.rac.messages.FinishReason
 import top.resderx.rac.providers.ApiType
 import top.resderx.rac.providers.ModelConfig
 import top.resderx.rac.providers.ProviderRegistry
 import top.resderx.rac.providers.SimpleModelProvider
-import io.ktor.client.HttpClient
-import io.ktor.client.engine.mock.respond
-import io.ktor.client.plugins.HttpTimeout
-import io.ktor.client.plugins.sse.SSE
-import io.ktor.http.HttpStatusCode
-import io.ktor.http.headersOf
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withTimeout
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.add
-import kotlinx.serialization.json.buildJsonArray
-import kotlinx.serialization.json.buildJsonObject
-import kotlinx.serialization.json.put
-import kotlin.test.AfterTest
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
-import kotlin.test.assertTrue
+import kotlin.test.*
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * ACP 协议端到端测试（JVM）。
@@ -265,8 +221,8 @@ class AcpProtocolTest {
         timeoutMs: Long = 10_000,
         check: () -> Boolean,
     ) {
-        withTimeout(timeoutMs) {
-            while (!check()) delay(10)
+        withTimeout(timeoutMs.milliseconds) {
+            while (!check()) delay(10.milliseconds)
         }
     }
 
@@ -433,7 +389,7 @@ class AcpProtocolTest {
             // 等待 Client 响应权限请求
             waitForCondition { connection.sent.size >= 4 }
             // 发送 session/prompt 响应
-            delay(100)
+            delay(100.milliseconds)
             connection.feed(rpcResponse(3, buildJsonObject { put("stopReason", "end_turn") }))
         }
         jobs.add(responderJob)
@@ -796,7 +752,7 @@ class AcpProtocolTest {
 
         // 收集更新
         val updates = mutableListOf<SessionUpdate>()
-        val stopReason = withTimeout(15_000) {
+        val stopReason = withTimeout(15_000.milliseconds) {
             client.sessionPrompt(
                 sessionId = sessionResult.sessionId,
                 prompt = listOf(AcpTextBlock(text = "Hello E2E")),

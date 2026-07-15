@@ -168,4 +168,4 @@ sealed interface SecurityScheme
 data class APIKeySecurityScheme(
     val name: String,
     val location: String = "header",
-) : top.resderx.rac.a2a.SecurityScheme
+) : SecurityScheme
