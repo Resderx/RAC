@@ -45,50 +45,50 @@ import top.resderx.rac.messages.FinishReason
  * @return 统一的 AIMessage（content 为累积的 Agent 响应文本）
  * @throws top.resderx.rac.exceptions.RACException 当 A2A 请求失败时向上传播
  */
-suspend fun top.resderx.rac.dsl.Llm.chatWithA2aAgent(
-    client: top.resderx.rac.a2a.A2aClient,
+suspend fun Llm.chatWithA2aAgent(
+    client: A2aClient,
     prompt: String,
-    onUpdate: suspend (top.resderx.rac.a2a.A2aStreamEvent) -> Unit = {},
-): top.resderx.rac.messages.AIMessage {
+    onUpdate: suspend (A2aStreamEvent) -> Unit = {},
+): AIMessage {
     // 1. 构造发送参数——user 角色的 TextPart
     val params = SendStreamingMessageParams(
-        message = top.resderx.rac.a2a.Message(
-            role = top.resderx.rac.a2a.Role.USER,
-            parts = listOf(top.resderx.rac.a2a.TextPart(text = prompt)),
+        message = Message(
+            role = Role.USER,
+            parts = listOf(TextPart(text = prompt)),
         ),
     )
 
     // 2. 累积 Agent 响应文本
     val contentBuilder = StringBuilder()
-    var finalTaskState: top.resderx.rac.a2a.TaskState = top.resderx.rac.a2a.TaskState.COMPLETED
+    var finalTaskState: TaskState = TaskState.COMPLETED
 
     // 3. 发送流式请求并收集更新
     client.sendStreamingMessage(params).collect { event ->
         onUpdate(event)
         when (event) {
-            is top.resderx.rac.a2a.A2aStreamEvent.Initial -> {
+            is A2aStreamEvent.Initial -> {
                 // 初始事件——若为 Task，提取其状态
                 val result = event.result
-                if (result is top.resderx.rac.a2a.SendMessageResult.TaskResult) {
+                if (result is SendMessageResult.TaskResult) {
                     finalTaskState = result.task.status.state
                 }
             }
-            is top.resderx.rac.a2a.A2aStreamEvent.StatusUpdate -> {
+            is A2aStreamEvent.StatusUpdate -> {
                 // 状态更新——记录最终状态
                 finalTaskState = event.event.status.state
                 // 若 task history 含 agent 消息，提取文本
             }
-            is top.resderx.rac.a2a.A2aStreamEvent.ArtifactUpdate -> {
+            is A2aStreamEvent.ArtifactUpdate -> {
                 // 产出物更新——提取文本 Part 累积
                 event.event.artifact.parts
-                    .filterIsInstance<top.resderx.rac.a2a.TextPart>()
+                    .filterIsInstance<TextPart>()
                     .forEach { contentBuilder.append(it.text) }
             }
         }
     }
 
     // 4. 映射 TaskState 到 FinishReason 并返回
-    return top.resderx.rac.messages.AIMessage(
+    return AIMessage(
         content = contentBuilder.toString(),
         finishReason = finalTaskState.toFinishReason(),
     )
@@ -118,21 +118,21 @@ suspend fun top.resderx.rac.dsl.Llm.chatWithA2aAgent(
  * @param systemPrompt 系统提示词，每次 chat 调用时注入；null 表示不注入
  * @return A2A Agent Server（协议无关分发器，调用方需绑定 HTTP 服务器）
  */
-fun top.resderx.rac.dsl.Llm.serveAsA2aAgent(
-    agentCard: top.resderx.rac.a2a.AgentCard = top.resderx.rac.a2a.AgentCard(
+fun Llm.serveAsA2aAgent(
+    agentCard: AgentCard = AgentCard(
         name = "rac-agent",
         description = "LLM Agent — Kotlin Multiplatform AI Call Library",
         url = "",
-        provider = top.resderx.rac.a2a.AgentProvider(organization = "ResDerX"),
+        provider = AgentProvider(organization = "ResDerX"),
     ),
     systemPrompt: String? = null,
-): top.resderx.rac.a2a.A2aAgentServer {
-    val handler = top.resderx.rac.a2a.RacA2aAgent(
+): A2aAgentServer {
+    val handler = RacA2aAgent(
         llm = this,
         agentCard = agentCard,
         systemPrompt = systemPrompt,
     )
-    return top.resderx.rac.a2a.A2aAgentServer(handler)
+    return A2aAgentServer(handler)
 }
 
 /**
@@ -146,12 +146,12 @@ fun top.resderx.rac.dsl.Llm.serveAsA2aAgent(
  * - AUTH_REQUIRED → UNKNOWN（需认证）
  * - WORKING → UNKNOWN（仍在进行中，不应出现在终态）
  */
-private fun top.resderx.rac.a2a.TaskState.toFinishReason(): top.resderx.rac.messages.FinishReason = when (this) {
-    top.resderx.rac.a2a.TaskState.COMPLETED -> top.resderx.rac.messages.FinishReason.STOP
-    top.resderx.rac.a2a.TaskState.INPUT_REQUIRED -> top.resderx.rac.messages.FinishReason.TOOL_CALLS
-    top.resderx.rac.a2a.TaskState.FAILED -> top.resderx.rac.messages.FinishReason.UNKNOWN
-    top.resderx.rac.a2a.TaskState.CANCELED -> top.resderx.rac.messages.FinishReason.STOP
-    top.resderx.rac.a2a.TaskState.REJECTED -> top.resderx.rac.messages.FinishReason.CONTENT_FILTER
-    top.resderx.rac.a2a.TaskState.AUTH_REQUIRED -> top.resderx.rac.messages.FinishReason.UNKNOWN
-    top.resderx.rac.a2a.TaskState.WORKING -> top.resderx.rac.messages.FinishReason.UNKNOWN
+private fun TaskState.toFinishReason(): FinishReason = when (this) {
+    TaskState.COMPLETED -> FinishReason.STOP
+    TaskState.INPUT_REQUIRED -> FinishReason.TOOL_CALLS
+    TaskState.FAILED -> FinishReason.UNKNOWN
+    TaskState.CANCELED -> FinishReason.STOP
+    TaskState.REJECTED -> FinishReason.CONTENT_FILTER
+    TaskState.AUTH_REQUIRED -> FinishReason.UNKNOWN
+    TaskState.WORKING -> FinishReason.UNKNOWN
 }

@@ -14,14 +14,13 @@
 
 package top.resderx.rac.mcp
 
-import top.resderx.rac.exceptions.RACException
-import top.resderx.rac.messages.ToolDefinition
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.encodeToJsonElement
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
+import top.resderx.rac.exceptions.RACException
+import top.resderx.rac.messages.ToolDefinition
 
 /**
  * MCP 客户端默认实现，通过 JSON-RPC 2.0 与 MCP 服务器交互。

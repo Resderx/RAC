@@ -14,13 +14,8 @@
 
 package top.resderx.rac.dsl
 
+import kotlinx.serialization.json.*
 import top.resderx.rac.messages.ToolDefinition
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.buildJsonArray
-import kotlinx.serialization.json.buildJsonObject
 
 /**
  * 工具定义列表构建器，在 `tools { }` 块内以 DSL 风格逐个声明工具。

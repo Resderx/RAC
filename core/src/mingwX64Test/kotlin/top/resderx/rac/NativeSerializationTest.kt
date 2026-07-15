@@ -14,22 +14,20 @@
 
 package top.resderx.rac
 
-import top.resderx.rac.api.completions.CompletionsStreamChunk
-import top.resderx.rac.api.completions.CompletionsResponse
-import top.resderx.rac.api.completions.Choice
-import top.resderx.rac.api.completions.ResponseMessage
-import top.resderx.rac.api.completions.StreamChoice
-import top.resderx.rac.api.completions.Delta
+import kotlinx.serialization.json.Json
 import top.resderx.rac.api.anthropic.AnthropicResponse
 import top.resderx.rac.api.anthropic.ContentBlock
-import top.resderx.rac.api.responses.ResponsesResponse
+import top.resderx.rac.api.completions.Choice
+import top.resderx.rac.api.completions.CompletionsResponse
+import top.resderx.rac.api.completions.CompletionsStreamChunk
+import top.resderx.rac.api.completions.ResponseMessage
 import top.resderx.rac.api.responses.OutputItem
 import top.resderx.rac.api.responses.ResponseContent
+import top.resderx.rac.api.responses.ResponsesResponse
 import top.resderx.rac.dsl.toAIMessage
 import top.resderx.rac.dsl.toFinishReason
 import top.resderx.rac.messages.FinishReason
 import top.resderx.rac.messages.Usage
-import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

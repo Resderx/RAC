@@ -14,20 +14,16 @@
 
 package top.resderx.rac
 
+import io.ktor.client.engine.mock.*
+import io.ktor.client.request.*
+import io.ktor.http.*
+import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.test.runTest
 import top.resderx.rac.exceptions.RACApiException
-import top.resderx.rac.exceptions.RACTimeoutException
 import top.resderx.rac.network.HttpClientFactory
 import top.resderx.rac.network.RequestExecutor
 import top.resderx.rac.network.RetryExecutor
 import top.resderx.rac.network.RetryPolicy
-import io.ktor.client.engine.mock.MockRequestHandleScope
-import io.ktor.client.engine.mock.respond
-import io.ktor.client.request.HttpRequestData
-import io.ktor.client.request.HttpResponseData
-import io.ktor.http.HttpStatusCode
-import io.ktor.http.headersOf
-import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith

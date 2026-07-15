@@ -14,20 +14,14 @@
 
 package top.resderx.rac.a2a
 
-import top.resderx.rac.exceptions.RACException
-import top.resderx.rac.mcp.JsonRpcError
-import top.resderx.rac.mcp.JsonRpcResponse
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.encodeToJsonElement
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.jsonPrimitive
-import kotlinx.serialization.json.longOrNull
+import kotlinx.serialization.json.*
+import top.resderx.rac.exceptions.RACException
+import top.resderx.rac.mcp.JsonRpcError
+import top.resderx.rac.mcp.JsonRpcResponse
 import kotlin.concurrent.Volatile
 
 /**
@@ -56,7 +50,7 @@ import kotlin.concurrent.Volatile
  * @property handler Agent 业务逻辑处理器
  */
 class A2aAgentServer(
-    private val handler: top.resderx.rac.a2a.A2aAgentHandler,
+    private val handler: A2aAgentHandler,
 ) {
 
     /** JSON 序列化器。 */
@@ -100,41 +94,41 @@ class A2aAgentServer(
         val params = requestJson["params"]
 
         if (method == null) {
-            return errorResponse(id, top.resderx.rac.a2a.A2aError.INVALID_PARAMS, "Missing 'method' field")
+            return errorResponse(id, A2aError.INVALID_PARAMS, "Missing 'method' field")
         }
         if (params == null) {
-            return errorResponse(id, top.resderx.rac.a2a.A2aError.INVALID_PARAMS, "Missing 'params' field")
+            return errorResponse(id, A2aError.INVALID_PARAMS, "Missing 'params' field")
         }
 
         return try {
             val result = when (method) {
                 "tasks/send" -> {
-                    val p = json.decodeFromJsonElement(top.resderx.rac.a2a.SendMessageParams.serializer(), params)
-                    json.encodeToJsonElement(top.resderx.rac.a2a.SendMessageResult.serializer(), handler.sendMessage(p))
+                    val p = json.decodeFromJsonElement(SendMessageParams.serializer(), params)
+                    json.encodeToJsonElement(SendMessageResult.serializer(), handler.sendMessage(p))
                 }
                 "tasks/get" -> {
-                    val p = json.decodeFromJsonElement(top.resderx.rac.a2a.GetTaskParams.serializer(), params)
-                    json.encodeToJsonElement(top.resderx.rac.a2a.GetTaskResult.serializer(), handler.getTask(p))
+                    val p = json.decodeFromJsonElement(GetTaskParams.serializer(), params)
+                    json.encodeToJsonElement(GetTaskResult.serializer(), handler.getTask(p))
                 }
                 "tasks/list" -> {
-                    val p = json.decodeFromJsonElement(top.resderx.rac.a2a.ListTasksParams.serializer(), params)
-                    json.encodeToJsonElement(top.resderx.rac.a2a.ListTasksResult.serializer(), handler.listTasks(p))
+                    val p = json.decodeFromJsonElement(ListTasksParams.serializer(), params)
+                    json.encodeToJsonElement(ListTasksResult.serializer(), handler.listTasks(p))
                 }
                 "tasks/cancel" -> {
-                    val p = json.decodeFromJsonElement(top.resderx.rac.a2a.CancelTaskParams.serializer(), params)
-                    json.encodeToJsonElement(top.resderx.rac.a2a.CancelTaskResult.serializer(), handler.cancelTask(p))
+                    val p = json.decodeFromJsonElement(CancelTaskParams.serializer(), params)
+                    json.encodeToJsonElement(CancelTaskResult.serializer(), handler.cancelTask(p))
                 }
                 else -> {
-                    return errorResponse(id, top.resderx.rac.a2a.A2aError.METHOD_NOT_FOUND, "Method not found: $method")
+                    return errorResponse(id, A2aError.METHOD_NOT_FOUND, "Method not found: $method")
                 }
             }
             successResponse(id, result)
         } catch (e: CancellationException) {
             throw e
-        } catch (e: top.resderx.rac.exceptions.RACException) {
-            errorResponse(id, top.resderx.rac.a2a.A2aError.INTERNAL_ERROR, e.message ?: "Unknown error")
+        } catch (e: RACException) {
+            errorResponse(id, A2aError.INTERNAL_ERROR, e.message ?: "Unknown error")
         } catch (e: Exception) {
-            errorResponse(id, top.resderx.rac.a2a.A2aError.INTERNAL_ERROR, e.message ?: "Unknown error")
+            errorResponse(id, A2aError.INTERNAL_ERROR, e.message ?: "Unknown error")
         }
     }
 
@@ -156,29 +150,29 @@ class A2aAgentServer(
      * @param requestJson JSON-RPC 请求的 JsonObject
      * @return 流式事件 Flow
      */
-    fun dispatchStreaming(requestJson: JsonObject): Flow<top.resderx.rac.a2a.A2aStreamEvent> = flow {
+    fun dispatchStreaming(requestJson: JsonObject): Flow<A2aStreamEvent> = flow {
         check(!closed) { "A2aAgentServer is closed" }
         val method = requestJson["method"]?.jsonPrimitive?.content
         val params = requestJson["params"]
 
         if (method != "tasks/sendSubscribe") {
-            throw top.resderx.rac.exceptions.RACException("Streaming dispatch only supports 'tasks/sendSubscribe', got: $method")
+            throw RACException("Streaming dispatch only supports 'tasks/sendSubscribe', got: $method")
         }
         if (params == null) {
-            throw top.resderx.rac.exceptions.RACException("Missing 'params' field in streaming request")
+            throw RACException("Missing 'params' field in streaming request")
         }
 
-        val p = json.decodeFromJsonElement(top.resderx.rac.a2a.SendStreamingMessageParams.serializer(), params)
+        val p = json.decodeFromJsonElement(SendStreamingMessageParams.serializer(), params)
 
         // 使用 Channel 缓冲 handler 推送的更新，确保 Initial 事件先于更新事件发射
-        val channel = Channel<top.resderx.rac.a2a.A2aStreamEvent>(Channel.UNLIMITED)
+        val channel = Channel<A2aStreamEvent>(Channel.UNLIMITED)
 
-        val context = object : top.resderx.rac.a2a.A2aAgentContext {
-            override suspend fun sendStatusUpdate(event: top.resderx.rac.a2a.TaskStatusUpdateEvent) {
-                channel.send(top.resderx.rac.a2a.A2aStreamEvent.StatusUpdate(event))
+        val context = object : A2aAgentContext {
+            override suspend fun sendStatusUpdate(event: TaskStatusUpdateEvent) {
+                channel.send(A2aStreamEvent.StatusUpdate(event))
             }
-            override suspend fun sendArtifactUpdate(event: top.resderx.rac.a2a.TaskArtifactUpdateEvent) {
-                channel.send(top.resderx.rac.a2a.A2aStreamEvent.ArtifactUpdate(event))
+            override suspend fun sendArtifactUpdate(event: TaskArtifactUpdateEvent) {
+                channel.send(A2aStreamEvent.ArtifactUpdate(event))
             }
         }
 
@@ -186,7 +180,7 @@ class A2aAgentServer(
         val initialResult = handler.sendStreamingMessage(p, context)
 
         // 先发射 Initial，再排空 channel 中的缓冲更新，保证事件顺序正确
-        emit(top.resderx.rac.a2a.A2aStreamEvent.Initial(initialResult))
+        emit(A2aStreamEvent.Initial(initialResult))
         channel.close()
         for (event in channel) {
             emit(event)
@@ -201,12 +195,12 @@ class A2aAgentServer(
      * @return 响应 JsonObject
      */
     private fun successResponse(id: Long?, result: JsonElement): JsonObject {
-        val response = top.resderx.rac.mcp.JsonRpcResponse(
+        val response = JsonRpcResponse(
             jsonrpc = "2.0",
             id = id,
             result = result,
         )
-        return json.encodeToJsonElement(top.resderx.rac.mcp.JsonRpcResponse.serializer(), response).jsonObject
+        return json.encodeToJsonElement(JsonRpcResponse.serializer(), response).jsonObject
     }
 
     /**
@@ -218,12 +212,12 @@ class A2aAgentServer(
      * @return 响应 JsonObject
      */
     private fun errorResponse(id: Long?, code: Int, message: String): JsonObject {
-        val response = top.resderx.rac.mcp.JsonRpcResponse(
+        val response = JsonRpcResponse(
             jsonrpc = "2.0",
             id = id,
-            error = top.resderx.rac.mcp.JsonRpcError(code = code, message = message),
+            error = JsonRpcError(code = code, message = message),
         )
-        return json.encodeToJsonElement(top.resderx.rac.mcp.JsonRpcResponse.serializer(), response).jsonObject
+        return json.encodeToJsonElement(JsonRpcResponse.serializer(), response).jsonObject
     }
 
     /**
