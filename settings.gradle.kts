@@ -48,7 +48,7 @@ plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
 }
 
-include(":core")
-include(":mcp")
-include(":acp")
-include(":a2a")
+include(":rac-core")
+include(":rac-mcp")
+include(":rac-acp")
+include(":rac-a2a")

@@ -26,8 +26,8 @@ plugins {
 kotlin {
     sourceSets {
         commonMain.dependencies {
-            implementation(project(":core"))
-            implementation(project(":mcp"))
+            implementation(project(":rac-core"))
+            implementation(project(":rac-mcp"))
         }
     }
 }
