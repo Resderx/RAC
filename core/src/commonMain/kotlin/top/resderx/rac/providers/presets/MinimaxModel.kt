@@ -36,18 +36,13 @@ enum class MinimaxModel(
     /** ABAB7——通用大模型，综合能力强。 */
     ABAB7(
         modelName = "abab7",
-        recommendedConfig = ModelConfig(
-            maxTokens = 8192L,
-            temperature = 0.7,
-        ),
+        recommendedConfig = ModelConfig(),
     ),
 
     /** MiniMax-M2.5——M2.5 系列，增强推理能力。 */
     M2_5(
         modelName = "MiniMax-M2.5",
         recommendedConfig = ModelConfig(
-            maxTokens = 8192L,
-            temperature = 0.7,
             reasoningEffort = "high",
             enableThinking = true,
         ),
@@ -56,9 +51,6 @@ enum class MinimaxModel(
     /** MiniMax-M2——M2 系列，通用能力强。 */
     M2(
         modelName = "MiniMax-M2",
-        recommendedConfig = ModelConfig(
-            maxTokens = 8192L,
-            temperature = 0.7,
-        ),
+        recommendedConfig = ModelConfig(),
     ),
 }

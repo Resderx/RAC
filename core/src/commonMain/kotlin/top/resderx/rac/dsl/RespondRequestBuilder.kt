@@ -19,6 +19,7 @@ import top.resderx.rac.api.responses.ResponsesRequest
 import top.resderx.rac.messages.ToolDefinition
 import top.resderx.rac.providers.ModelConfig
 import top.resderx.rac.providers.ModelProvider
+import kotlinx.serialization.json.JsonPrimitive
 
 /**
  * Respond 请求的 DSL 构建器，用于 Responses API（OpenAI 新协议）。
@@ -90,7 +91,7 @@ class RespondRequestBuilder {
         val config: ModelConfig? = provider.models[model]
         return ResponsesRequest(
             model = model,
-            input = input,
+            input = JsonPrimitive(input),
             instructions = instructions ?: config?.systemPrompt,
             stream = false,
             tools = _tools?.takeIf { it.isNotEmpty() }?.map { it.toCompletionsTool() },

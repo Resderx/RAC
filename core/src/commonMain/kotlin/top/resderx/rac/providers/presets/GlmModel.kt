@@ -38,8 +38,6 @@ enum class GlmModel(
     GLM_5_2(
         modelName = "glm-5.2",
         recommendedConfig = ModelConfig(
-            maxTokens = 8192L,
-            temperature = 0.7,
             reasoningEffort = "high",
             enableThinking = true,
         ),
@@ -48,27 +46,18 @@ enum class GlmModel(
     /** GLM-5.1——上一代旗舰，性能稳定。 */
     GLM_5_1(
         modelName = "glm-5.1",
-        recommendedConfig = ModelConfig(
-            maxTokens = 8192L,
-            temperature = 0.7,
-        ),
+        recommendedConfig = ModelConfig(),
     ),
 
     /** GLM-5——初代 5 系列，通用能力强。 */
     GLM_5(
         modelName = "glm-5",
-        recommendedConfig = ModelConfig(
-            maxTokens = 8192L,
-            temperature = 0.7,
-        ),
+        recommendedConfig = ModelConfig(),
     ),
 
     /** GLM-4.7 Flash——轻量快速模型，低延迟。 */
     GLM_4_7_FLASH(
         modelName = "glm-4.7-flash",
-        recommendedConfig = ModelConfig(
-            maxTokens = 4096L,
-            temperature = 0.7,
-        ),
+        recommendedConfig = ModelConfig(),
     ),
 }

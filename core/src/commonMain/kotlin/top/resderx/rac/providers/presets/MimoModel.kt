@@ -36,8 +36,6 @@ enum class MimoModel(
     V2_5_PRO(
         modelName = "MiMo-V2.5-Pro",
         recommendedConfig = ModelConfig(
-            maxTokens = 8192L,
-            temperature = 0.7,
             reasoningEffort = "high",
             enableThinking = true,
         ),
@@ -46,9 +44,6 @@ enum class MimoModel(
     /** MiMo V2 Flash——轻量快速模型，低延迟。 */
     V2_FLASH(
         modelName = "MiMo-V2-Flash",
-        recommendedConfig = ModelConfig(
-            maxTokens = 4096L,
-            temperature = 0.7,
-        ),
+        recommendedConfig = ModelConfig(),
     ),
 }

@@ -36,8 +36,6 @@ enum class GeminiModel(
     PRO_3(
         modelName = "gemini-3-pro",
         recommendedConfig = ModelConfig(
-            maxTokens = 8192L,
-            temperature = 0.7,
             reasoningEffort = "high",
             enableThinking = true,
         ),
@@ -46,9 +44,6 @@ enum class GeminiModel(
     /** Gemini 3 Flash——轻量快速模型，低延迟，适合日常任务。 */
     FLASH_3(
         modelName = "gemini-3-flash",
-        recommendedConfig = ModelConfig(
-            maxTokens = 8192L,
-            temperature = 0.7,
-        ),
+        recommendedConfig = ModelConfig(),
     ),
 }

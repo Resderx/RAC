@@ -25,17 +25,19 @@ import kotlinx.serialization.Serializable
  * 设计：maxTokens 必填（Anthropic 要求），字段名用 @SerialName 转 snake_case。
  * 边缘：messages 不含 system 消息，system 单独传；
  *   tools 元素为 [AnthropicTool] 类型，序列化为 `{name, description, input_schema}`。
+ *   messages 字段使用 [AnthropicMessageListSerializer] 自定义序列化器，按 Anthropic 格式输出
+ *   （AssistantMessage.content 为数组、toolCalls 转为 tool_use 类型、ToolMessage 用 user 角色 + tool_result 类型）。
  *
  * 定制化参数差异：
  * - stop：Anthropic 字段名为 `stop_sequences`（注意复数）
  * - seed：Anthropic 不支持随机种子，本类不暴露该字段（设置时静默忽略）
- * - enableThinking：通过 `thinking` 对象控制，包含 `type`（"enabled"/"disabled"）与
+ * - enableThinking：通过 `thinking` 对象控制，包括 `type`（"enabled"/"disabled"）与
  *   `budget_tokens`（思考预算上限，必须小于 maxTokens），见 [AnthropicThinking]
  */
 @Serializable
 data class AnthropicRequest(
     val model: String,
-    val messages: List<Message>,
+    @Serializable(with = AnthropicMessageListSerializer::class) val messages: List<Message>,
     val system: String? = null,
     @SerialName("max_tokens") val maxTokens: Long,
     val temperature: Double? = null,

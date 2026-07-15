@@ -25,6 +25,8 @@ import kotlinx.serialization.Serializable
  * 设计：可选字段用可空类型 + 默认 null，序列化时省略 null（Json encodeDefaults=false）。
  * 边缘：messages 为空时由服务端报错；tools 为空列表时不发送 tools 字段；
  *   tools 元素为 [CompletionsTool] 包装类型，序列化为 `{"type":"function","function":{...}}`。
+ *   messages 字段使用 [CompletionsMessageListSerializer] 自定义序列化器，按 OpenAI 多模态格式输出
+ *   （UserMessage.content 为数组、图片用 image_url 嵌套结构、工具调用用 tool_calls 字段）。
  *
  * 定制化参数（stop/seed）：
  * - stop：停止序列，模型生成到任一字符串时立即停止（OpenAI/DeepSeek/Qwen 等均支持）
@@ -34,7 +36,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class CompletionsRequest(
     val model: String,
-    val messages: List<Message>,
+    @Serializable(with = CompletionsMessageListSerializer::class) val messages: List<Message>,
     val temperature: Double? = null,
     @SerialName("top_p") val topP: Double? = null,
     @SerialName("max_tokens") val maxTokens: Long? = null,

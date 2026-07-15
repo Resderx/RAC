@@ -42,45 +42,31 @@ enum class KimiModel(
     /** Kimi K2.5——最新 K2 系列，综合能力强。 */
     K2_5(
         modelName = "kimi-k2.5",
-        recommendedConfig = ModelConfig(
-            maxTokens = 8192L,
-            temperature = 0.7,
-        ),
+        recommendedConfig = ModelConfig(),
     ),
 
     /** Kimi K2 0905 Preview——K2 0905 预览版。 */
     K2_0905(
         modelName = "kimi-k2-0905-preview",
-        recommendedConfig = ModelConfig(
-            maxTokens = 8192L,
-            temperature = 0.7,
-        ),
+        recommendedConfig = ModelConfig(),
     ),
 
     /** Kimi K2 0711 Preview——K2 0711 预览版。 */
     K2_0711(
         modelName = "kimi-k2-0711-preview",
-        recommendedConfig = ModelConfig(
-            maxTokens = 8192L,
-            temperature = 0.7,
-        ),
+        recommendedConfig = ModelConfig(),
     ),
 
     /** Kimi K2 Turbo Preview——K2 Turbo 加速版，低延迟。 */
     K2_TURBO(
         modelName = "kimi-k2-turbo-preview",
-        recommendedConfig = ModelConfig(
-            maxTokens = 8192L,
-            temperature = 0.7,
-        ),
+        recommendedConfig = ModelConfig(),
     ),
 
     /** Kimi K2 Thinking——K2 思考模型，深度推理。 */
     K2_THINKING(
         modelName = "kimi-k2-thinking",
         recommendedConfig = ModelConfig(
-            maxTokens = 8192L,
-            temperature = 0.0,
             reasoningEffort = "high",
             enableThinking = true,
         ),
@@ -90,8 +76,6 @@ enum class KimiModel(
     K2_THINKING_TURBO(
         modelName = "kimi-k2-thinking-turbo",
         recommendedConfig = ModelConfig(
-            maxTokens = 8192L,
-            temperature = 0.0,
             reasoningEffort = "medium",
             enableThinking = true,
         ),
@@ -100,27 +84,18 @@ enum class KimiModel(
     /** Moonshot V1 8K——初代模型，8K 上下文窗口。 */
     V1_8K(
         modelName = "moonshot-v1-8k",
-        recommendedConfig = ModelConfig(
-            maxTokens = 8000L,
-            temperature = 0.7,
-        ),
+        recommendedConfig = ModelConfig(),
     ),
 
     /** Moonshot V1 32K——初代模型，32K 上下文窗口。 */
     V1_32K(
         modelName = "moonshot-v1-32k",
-        recommendedConfig = ModelConfig(
-            maxTokens = 32000L,
-            temperature = 0.7,
-        ),
+        recommendedConfig = ModelConfig(),
     ),
 
     /** Moonshot V1 128K——初代模型，128K 超长上下文窗口。 */
     V1_128K(
         modelName = "moonshot-v1-128k",
-        recommendedConfig = ModelConfig(
-            maxTokens = 128000L,
-            temperature = 0.7,
-        ),
+        recommendedConfig = ModelConfig(),
     ),
 }

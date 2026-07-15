@@ -38,8 +38,6 @@ enum class AnthropicModel(
     CLAUDE_OPUS_4_1(
         modelName = "claude-opus-4-1",
         recommendedConfig = ModelConfig(
-            maxTokens = 16384L,
-            temperature = 0.0,
             enableThinking = true,
         ),
     ),
@@ -48,8 +46,6 @@ enum class AnthropicModel(
     CLAUDE_SONNET_4_6(
         modelName = "claude-sonnet-4-6",
         recommendedConfig = ModelConfig(
-            maxTokens = 8192L,
-            temperature = 0.0,
             enableThinking = true,
         ),
     ),
@@ -58,7 +54,6 @@ enum class AnthropicModel(
     CLAUDE_OPUS_4(
         modelName = "claude-opus-4-20250514",
         recommendedConfig = ModelConfig(
-            maxTokens = 8192L,
             temperature = 0.0,
         ),
     ),
@@ -67,7 +62,6 @@ enum class AnthropicModel(
     CLAUDE_SONNET_4(
         modelName = "claude-sonnet-4-20250514",
         recommendedConfig = ModelConfig(
-            maxTokens = 8192L,
             temperature = 0.0,
         ),
     ),

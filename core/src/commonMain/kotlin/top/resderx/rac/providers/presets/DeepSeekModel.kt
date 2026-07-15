@@ -36,8 +36,6 @@ enum class DeepSeekModel(
     V4_PRO(
         modelName = "deepseek-v4-pro",
         recommendedConfig = ModelConfig(
-            maxTokens = 8192L,
-            temperature = 0.0,
             reasoningEffort = "high",
             enableThinking = true,
         ),
@@ -47,8 +45,6 @@ enum class DeepSeekModel(
     V4_FLASH(
         modelName = "deepseek-v4-flash",
         recommendedConfig = ModelConfig(
-            maxTokens = 8192L,
-            temperature = 0.0,
             reasoningEffort = "medium",
         ),
     ),

@@ -40,8 +40,6 @@ enum class QwenModel(
     MAX_3_7(
         modelName = "qwen3.7-max-preview",
         recommendedConfig = ModelConfig(
-            maxTokens = 8192L,
-            temperature = 0.7,
             reasoningEffort = "high",
             enableThinking = true,
         ),
@@ -50,18 +48,13 @@ enum class QwenModel(
     /** Qwen3.7 Plus Preview——最新 Plus，平衡性能与成本。 */
     PLUS_3_7(
         modelName = "qwen3.7-plus-preview",
-        recommendedConfig = ModelConfig(
-            maxTokens = 8192L,
-            temperature = 0.7,
-        ),
+        recommendedConfig = ModelConfig(),
     ),
 
     /** Qwen3.6 Max Preview——上一代 Max 旗舰。 */
     MAX_3_6(
         modelName = "qwen3.6-max-preview",
         recommendedConfig = ModelConfig(
-            maxTokens = 8192L,
-            temperature = 0.7,
             reasoningEffort = "high",
             enableThinking = true,
         ),
@@ -70,27 +63,18 @@ enum class QwenModel(
     /** Qwen3.6 Plus——上一代 Plus，性价比之选。 */
     PLUS_3_6(
         modelName = "qwen3.6-plus",
-        recommendedConfig = ModelConfig(
-            maxTokens = 8192L,
-            temperature = 0.7,
-        ),
+        recommendedConfig = ModelConfig(),
     ),
 
     /** Qwen3.6 Flash——轻量快速，低延迟。 */
     FLASH_3_6(
         modelName = "qwen3.6-flash",
-        recommendedConfig = ModelConfig(
-            maxTokens = 4096L,
-            temperature = 0.7,
-        ),
+        recommendedConfig = ModelConfig(),
     ),
 
     /** Qwen Max Flash——Max 系列轻量版，速度更快。 */
     MAX_FLASH(
         modelName = "qwen-max-flash",
-        recommendedConfig = ModelConfig(
-            maxTokens = 4096L,
-            temperature = 0.7,
-        ),
+        recommendedConfig = ModelConfig(),
     ),
 }

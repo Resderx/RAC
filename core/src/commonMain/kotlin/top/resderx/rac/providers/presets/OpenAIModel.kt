@@ -38,8 +38,6 @@ enum class OpenAIModel(
     GPT_5_5(
         modelName = "gpt-5.5",
         recommendedConfig = ModelConfig(
-            maxTokens = 16384L,
-            temperature = 0.7,
             reasoningEffort = "high",
             enableThinking = true,
         ),
@@ -49,8 +47,6 @@ enum class OpenAIModel(
     GPT_5_4(
         modelName = "gpt-5.4",
         recommendedConfig = ModelConfig(
-            maxTokens = 16384L,
-            temperature = 0.7,
             reasoningEffort = "high",
             enableThinking = true,
         ),
@@ -59,18 +55,12 @@ enum class OpenAIModel(
     /** GPT-5.4 Mini——轻量版，速度快成本低，适合日常对话。 */
     GPT_5_4_MINI(
         modelName = "gpt-5.4-mini",
-        recommendedConfig = ModelConfig(
-            maxTokens = 8192L,
-            temperature = 0.7,
-        ),
+        recommendedConfig = ModelConfig(),
     ),
 
     /** GPT-5.4 Nano——超轻量版，极致速度，适合简单任务与边缘部署。 */
     GPT_5_4_NANO(
         modelName = "gpt-5.4-nano",
-        recommendedConfig = ModelConfig(
-            maxTokens = 4096L,
-            temperature = 0.7,
-        ),
+        recommendedConfig = ModelConfig(),
     ),
 }

@@ -20,7 +20,11 @@ import top.resderx.rac.api.anthropic.toAnthropicTool
 import top.resderx.rac.api.completions.CompletionsRequest
 import top.resderx.rac.api.completions.toCompletionsTool
 import top.resderx.rac.api.responses.ResponsesRequest
+import top.resderx.rac.api.responses.toResponsesJson
+import top.resderx.rac.messages.AudioContent
 import top.resderx.rac.messages.AssistantMessage
+import top.resderx.rac.messages.Content
+import top.resderx.rac.messages.ImageContent
 import top.resderx.rac.messages.Message
 import top.resderx.rac.messages.SystemMessage
 import top.resderx.rac.messages.TextContent
@@ -30,6 +34,8 @@ import top.resderx.rac.messages.ToolMessage
 import top.resderx.rac.messages.UserMessage
 import top.resderx.rac.providers.ModelConfig
 import top.resderx.rac.providers.ModelProvider
+import kotlinx.serialization.json.add
+import kotlinx.serialization.json.buildJsonArray
 
 /**
  * Chat 请求的 DSL 构建器，以声明式风格构建对话消息列表与生成参数。
@@ -144,13 +150,17 @@ class ChatRequestBuilder {
     }
 
     /**
-     * 添加一条用户消息，内容由 UserContentBuilder 构建。
+     * 添加一条用户消息，内容由 [UserContentBuilder] 构建（支持多模态：文本/图片/音频）。
      *
-     * @param block 在 UserContentBuilder 作用域内设置内容
+     * - 作用：在 `user { }` 块内以 DSL 风格追加多模态内容块，最终组装为 [UserMessage] 的 `content: List<Content>`
+     * - 必要性：多模态场景下用户消息需混合文本与图片/音频，纯字符串入口无法表达
+     * - 设计思路：[UserContentBuilder] 内部维护 `MutableList<Content>`，build() 产出不可变列表
+     *
+     * @param block 在 [UserContentBuilder] 作用域内追加内容块
      */
     fun user(block: UserContentBuilder.() -> Unit) {
         val builder = UserContentBuilder().apply(block)
-        _messages.add(UserMessage(builder.text))
+        _messages.add(UserMessage(builder.build()))
     }
 
     /**
@@ -387,6 +397,8 @@ class ChatRequestBuilder {
      *   - seed：分层回退（builder.seed → config.seed）
      *   - stop：Responses 不支持，静默忽略
      *   - enableThinking：Responses 不支持，静默忽略
+     * - input 构造：把完整消息列表转为 Responses 格式 JSON 数组（支持多模态），
+     *   而非旧版提取最后一条用户消息文本——多模态内容（图片/音频）需要完整消息结构才能正确传递
      *
      * @param provider 提供连接信息与 models 注册表的供应商
      * @return 构建完成的 ResponsesRequest（stream=false）
@@ -394,23 +406,13 @@ class ChatRequestBuilder {
     internal fun buildResponses(provider: ModelProvider): ResponsesRequest {
         val (model, config) = resolveModel(provider)
         val messages = resolveMessages(config)
-        val lastUserText = messages
-            .filterIsInstance<UserMessage>()
-            .lastOrNull()
-            ?.content
-            ?.filterIsInstance<TextContent>()
-            ?.joinToString("") { it.text }
-        val input = lastUserText ?: messages.joinToString("\n") { msg ->
-            when (msg) {
-                is SystemMessage -> msg.content
-                is UserMessage -> msg.content.filterIsInstance<TextContent>().joinToString("") { it.text }
-                is AssistantMessage -> msg.content ?: ""
-                is ToolMessage -> msg.content
-            }
+        // 构造 Responses API input 消息数组（支持多模态）
+        val inputArray = buildJsonArray {
+            messages.forEach { add(it.toResponsesJson()) }
         }
         return ResponsesRequest(
             model = model,
-            input = input,
+            input = inputArray,
             temperature = temperature ?: config?.temperature,
             maxOutputTokens = maxTokens ?: config?.maxTokens,
             stream = false,
@@ -421,14 +423,67 @@ class ChatRequestBuilder {
 }
 
 /**
- * 用户消息内容构建器（简化版，当前仅支持纯文本）。
+ * 用户消息内容构建器（支持多模态：文本/图片/音频）。
  *
- * - 作用：在 `user { }` 块内以 DSL 风格设置用户消息内容
- * - 必要性：为未来扩展多模态内容预留入口，当前保持最简实现
- * - 设计思路：标注 @RacDslMarker 防止作用域污染；当前仅暴露 text 属性
+ * - 作用：在 `user { }` 块内以 DSL 风格追加 [Content] 块，最终组装为 [UserMessage] 的 `content: List<Content>`
+ * - 必要性：多模态场景下用户消息需混合文本与图片/音频，纯字符串入口无法表达
+ * - 设计思路：
+ *   1. 内部维护 `MutableList<Content>`，每次调用 text()/image()/audio() 追加一个内容块
+ *   2. build() 产出不可变列表；空列表时回退为单条空 [TextContent]（保证 content 非空）
+ *   3. 标注 @RacDslMarker 防止作用域污染
+ * - 边缘情况：未调用任何追加方法时 build() 返回 `[TextContent("")]`，与 `user("text")` 空字符串行为一致
  */
 @RacDslMarker
 class UserContentBuilder {
-    /** 用户消息文本内容，默认空字符串。 */
-    var text: String = ""
+
+    /** 内部可变内容块列表，按追加顺序保留。 */
+    private val _contents: MutableList<Content> = mutableListOf()
+
+    /**
+     * 追加一段文本内容块。
+     *
+     * @param text 文本内容
+     */
+    fun text(text: String) {
+        _contents.add(TextContent(text))
+    }
+
+    /**
+     * 追加一张图片内容块（url 与 base64 至少传一个）。
+     *
+     * - 作用：向用户消息追加图片，供视觉模型识别/分析
+     * - 参数优先级：url 优先；若仅提供 base64，则在各 API 序列化层转换为 data URI 或 base64 source
+     *
+     * @param url 图片 URL（http/https），与 base64 二选一
+     * @param base64 图片 base64 编码字符串（不含 data: 前缀），与 url 二选一
+     * @param mimeType MIME 类型（如 "image/jpeg"、"image/png"），base64 模式下必填
+     */
+    fun image(url: String? = null, base64: String? = null, mimeType: String = "image/jpeg") {
+        require(url != null || base64 != null) { "image() 至少需要提供 url 或 base64 之一" }
+        _contents.add(ImageContent(url = url, base64 = base64, mimeType = mimeType))
+    }
+
+    /**
+     * 追加一段音频内容块（base64 编码）。
+     *
+     * - 作用：向用户消息追加音频，供音频模型转写/分析
+     * - 注意：OpenAI Chat Completions 与 Anthropic Messages API 当前不支持音频输入，
+     *   序列化层会降级为文本占位符；Responses API 有 `input_audio` 类型但本项目暂未适配
+     *
+     * @param base64 音频 base64 编码字符串
+     * @param mimeType MIME 类型（如 "audio/wav"、"audio/mpeg"）
+     */
+    fun audio(base64: String, mimeType: String = "audio/wav") {
+        _contents.add(AudioContent(base64 = base64, mimeType = mimeType))
+    }
+
+    /**
+     * 构建不可变内容列表。
+     *
+     * - 边缘情况：未追加任何内容块时返回 `[TextContent("")]`，保证 UserMessage.content 非空
+     *
+     * @return 内容块不可变列表
+     */
+    internal fun build(): List<Content> =
+        if (_contents.isEmpty()) listOf(TextContent("")) else _contents.toList()
 }

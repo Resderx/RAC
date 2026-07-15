@@ -39,8 +39,6 @@ enum class DoubaoModel(
     SEED_2_1_PRO(
         modelName = "doubao-seed-2.1-pro",
         recommendedConfig = ModelConfig(
-            maxTokens = 8192L,
-            temperature = 0.7,
             reasoningEffort = "high",
             enableThinking = true,
         ),
@@ -49,27 +47,19 @@ enum class DoubaoModel(
     /** Doubao Seed 1.6——1.6 系列标准版，通用能力强。 */
     SEED_1_6(
         modelName = "doubao-seed-1.6",
-        recommendedConfig = ModelConfig(
-            maxTokens = 8192L,
-            temperature = 0.7,
-        ),
+        recommendedConfig = ModelConfig(),
     ),
 
     /** Doubao Seed 1.6 Flash——1.6 轻量版，低延迟。 */
     SEED_1_6_FLASH(
         modelName = "doubao-seed-1.6-flash",
-        recommendedConfig = ModelConfig(
-            maxTokens = 4096L,
-            temperature = 0.7,
-        ),
+        recommendedConfig = ModelConfig(),
     ),
 
     /** Doubao Seed 1.6 Thinking——1.6 思考模型，深度推理。 */
     SEED_1_6_THINKING(
         modelName = "doubao-seed-1.6-thinking",
         recommendedConfig = ModelConfig(
-            maxTokens = 8192L,
-            temperature = 0.0,
             reasoningEffort = "high",
             enableThinking = true,
         ),
@@ -78,9 +68,6 @@ enum class DoubaoModel(
     /** Doubao Seed 1.6 Vision——1.6 视觉模型，支持文本输入。 */
     SEED_1_6_VISION(
         modelName = "doubao-seed-1.6-vision",
-        recommendedConfig = ModelConfig(
-            maxTokens = 8192L,
-            temperature = 0.7,
-        ),
+        recommendedConfig = ModelConfig(),
     ),
 }
