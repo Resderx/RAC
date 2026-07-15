@@ -14,8 +14,6 @@
 
 package top.resderx.rac.a2a
 
-import kotlinx.coroutines.flow.Flow
-
 /**
  * A2A Agent 上下文，提供 Agent 向 Client 推送流式更新的能力。
  *
@@ -37,7 +35,7 @@ interface A2aAgentContext {
      *
      * @param event 状态更新事件
      */
-    suspend fun sendStatusUpdate(event: top.resderx.rac.a2a.TaskStatusUpdateEvent)
+    suspend fun sendStatusUpdate(event: TaskStatusUpdateEvent)
 
     /**
      * 推送任务产出物更新（流式）。
@@ -47,7 +45,7 @@ interface A2aAgentContext {
      *
      * @param event 产出物更新事件
      */
-    suspend fun sendArtifactUpdate(event: top.resderx.rac.a2a.TaskArtifactUpdateEvent)
+    suspend fun sendArtifactUpdate(event: TaskArtifactUpdateEvent)
 }
 
 /**
@@ -73,7 +71,7 @@ interface A2aAgentHandler {
      *
      * @return Agent Card 文档
      */
-    fun getAgentCard(): top.resderx.rac.a2a.AgentCard
+    fun getAgentCard(): AgentCard
 
     /**
      * 处理 tasks/send 请求——非流式消息处理。
@@ -84,7 +82,7 @@ interface A2aAgentHandler {
      * @param params 发送参数（含消息、任务 ID、配置等）
      * @return 发送结果——Task 或 Message
      */
-    suspend fun sendMessage(params: top.resderx.rac.a2a.SendMessageParams): top.resderx.rac.a2a.SendMessageResult
+    suspend fun sendMessage(params: SendMessageParams): SendMessageResult
 
     /**
      * 处理 tasks/sendSubscribe 请求——流式消息处理。
@@ -97,9 +95,9 @@ interface A2aAgentHandler {
      * @return 初始结果（流的首条事件，Task 或 Message）
      */
     suspend fun sendStreamingMessage(
-        params: top.resderx.rac.a2a.SendStreamingMessageParams,
-        context: top.resderx.rac.a2a.A2aAgentContext,
-    ): top.resderx.rac.a2a.SendMessageResult
+        params: SendStreamingMessageParams,
+        context: A2aAgentContext,
+    ): SendMessageResult
 
     /**
      * 处理 tasks/get 请求——查询任务状态。
@@ -107,7 +105,7 @@ interface A2aAgentHandler {
      * @param params 查询参数（含任务 ID 与可选 historyLength）
      * @return 任务当前完整状态
      */
-    suspend fun getTask(params: top.resderx.rac.a2a.GetTaskParams): top.resderx.rac.a2a.GetTaskResult
+    suspend fun getTask(params: GetTaskParams): GetTaskResult
 
     /**
      * 处理 tasks/list 请求——列出任务。
@@ -115,7 +113,7 @@ interface A2aAgentHandler {
      * @param params 过滤参数
      * @return 匹配的任务列表
      */
-    suspend fun listTasks(params: top.resderx.rac.a2a.ListTasksParams): top.resderx.rac.a2a.ListTasksResult
+    suspend fun listTasks(params: ListTasksParams): ListTasksResult
 
     /**
      * 处理 tasks/cancel 请求——取消任务。
@@ -123,7 +121,7 @@ interface A2aAgentHandler {
      * @param params 取消参数（含任务 ID）
      * @return 取消后的任务状态
      */
-    suspend fun cancelTask(params: top.resderx.rac.a2a.CancelTaskParams): top.resderx.rac.a2a.CancelTaskResult
+    suspend fun cancelTask(params: CancelTaskParams): CancelTaskResult
 
     /**
      * 关闭 Agent 并释放资源。
